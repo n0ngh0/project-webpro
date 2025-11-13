@@ -1,80 +1,110 @@
 const coursesData = [
   {
-    id: 1,
-    code: "MTH1101",
-    title: "สถิติวิศวกรรมศาสตร์ 1 และ 1-5 ห้องปฏิบัติการวิศวกรรม",
-    image: "/public/mathematics-notes.jpg",
-    tags: ["แบบทดสอบ", "บันทึก", "ปัญหา", "อื่นๆ"],
-    views: 240,
-    comments: 12,
-    saves: 4,
-    category: "ทั้งหมด",
+    "id": 1,
+    "code": "MTH1101",
+    "title": "สถิติวิศวกรรมศาสตร์ 1 และ 1-5 ห้องปฏิบัติการวิศวกรรม",
+    "image": "/public/mathematics-notes.jpg",
+    "tags": ["แบบทดสอบ", "บันทึก", "ปัญหา", "อื่นๆ"],
+    "views": 240,
+    "comments": 12,
+    "saves": 4,
+    "category": "ทั้งหมด",
+    "author": {
+      "id": 101,
+      "username": "Somsak K.",
+      "profileImage": "/public/profiles/user-01.png"
+    }
   },
   {
-    id: 2,
-    code: "CS5233",
-    title: "ไม่ระบุไม่ใช่ศาสตร์สถานะ",
-    image: "/public/computer-programming-illustration.jpg",
-    tags: ["บันทึก", "โครงร่าง"],
-    views: 892,
-    comments: 27,
-    saves: 8,
-    category: "CS5233",
+    "id": 2,
+    "code": "CSS233",
+    "title": "ไม่ระบุไม่ใช่ศาสตร์สถานะ",
+    "image": "/public/computer-programming-illustration.jpg",
+    "tags": ["บันทึก", "โครงร่าง"],
+    "views": 892,
+    "comments": 27,
+    "saves": 8,
+    "category": "CSS233",
+    "author": {
+      "id": 102,
+      "username": "Manee Jaidee",
+      "profileImage": "/public/profiles/user-02.jpg"
+    }
   },
   {
-    id: 3,
-    code: "CS5111",
-    title: "Computer Programming 1",
-    image: "/public/computer-lab-desk-setup.jpg",
-    tags: ["การเขียน", "ประมวลผล", "อ้างอิง"],
-    views: 756,
-    comments: 34,
-    saves: 6,
-    category: "CS5111",
+    "id": 3,
+    "code": "CSS111",
+    "title": "Computer Programming 1",
+    "image": "/public/computer-lab-desk-setup.jpg",
+    "tags": ["การเขียน", "ประมวลผล", "อ้างอิง"],
+    "views": 756,
+    "comments": 34,
+    "saves": 6,
+    "category": "CSS111",
+    "author": {
+      "id": 102,
+      "username": "Manee Jaidee",
+      "profileImage": "/public/profiles/user-02.jpg"
+    }
   },
   {
-    id: 4,
-    code: "ENG4501",
-    title: "ENGLISH",
-    image: "/public/english-language-learning-colorful.jpg",
-    tags: ["บันทึก", "คำศัพท์", "ไวยากรณ์", "การอ่าน"],
-    views: 432,
-    comments: 15,
-    saves: 5,
-    category: "ทั้งหมด",
+    "id": 4,
+    "code": "ENG4501",
+    "title": "ENGLISH",
+    "image": "/public/english-language-learning-colorful.jpg",
+    "tags": ["บันทึก", "คำศัพท์", "ไวยากรณ์", "การอ่าน"],
+    "views": 432,
+    "comments": 15,
+    "saves": 5,
+    "category": "ทั้งหมด",
+    "author": {
+      "id": 103,
+      "username": "David Smith",
+      "profileImage": "/public/profiles/user-03.png"
+    }
   },
   {
-    id: 5,
-    code: "BIO3001",
-    title: "Human Brain And AI",
-    image: "/public/human-brain-with-ai-illustration-rainbow.jpg",
-    tags: ["บันทึก", "ชีววิทยา", "ปัญญาประดิษฐ์"],
-    views: 521,
-    comments: 19,
-    saves: 7,
-    category: "ทั้งหมด",
+    "id": 5,
+    "code": "BIO3001",
+    "title": "Human Brain And AI",
+    "image": "/public/human-brain-with-ai-illustration-rainbow.jpg",
+    "tags": ["บันทึก", "ชีววิทยา", "ปัญญาประดิษฐ์"],
+    "views": 521,
+    "comments": 19,
+    "saves": 7,
+    "category": "ทั้งหมด",
+    "author": {
+      "id": 104,
+      "username": "Wassana N.",
+      "profileImage": "/public/profiles/user-04.jpg"
+    }
   },
   {
-    id: 6,
-    code: "DB2001",
-    title: "Database Architecture",
-    image: "/public/database-structure-isometric-3d.jpg",
-    tags: ["แผนผัง", "โครงสร้าง", "ระบบ"],
-    views: 618,
-    comments: 22,
-    saves: 9,
-    category: "ทั้งหมด",
-  },
+    "id": 6,
+    "code": "DB2001",
+    "title": "Database Architecture",
+    "image": "/public/database-structure-isometric-3d.jpg",
+    "tags": ["แผนผัง", "โครงสร้าง", "ระบบ"],
+    "views": 618,
+    "comments": 22,
+    "saves": 9,
+    "category": "ทั้งหมด",
+    "author": {
+      "id": 101,
+      "username": "Somsak K.",
+      "profileImage": "/public/profiles/user-01.png"
+    }
+  }
 ]
 
 const list = document.getElementById('course-list');
-function renderCourses() {
-  const filteredCourses = getFilteredCourses()
+const renderCourse = () => {
+  let htmlContent = "";
 
-  coursesGrid.innerHTML = filteredCourses
-    .map(
-      (course) => `
-        <div class="course-card">
+  coursesData.forEach((course) => {
+    htmlContent += 
+    `
+    <div class="course-card">
             <div class="course-image">
                 <img src="${course.image}" alt="${course.title}">
             </div>
@@ -85,17 +115,18 @@ function renderCourses() {
                 <div class="course-tags">
                     ${course.tags
                       .slice(0, 4)
-                      .map(
-                        (tag) => `
-                        <span class="course-tag">${tag}</span>
-                    `,
-                      )
+                      .map(tag => `<span class="course-tag">${tag}</span>`)
                       .join("")}
                 </div>
                 
-                <button class="course-btn">ชม</button>
+                <button class="course-btn" onclick="read(${course.id})">ชม</button>
                 
-                <div class="course-stats">
+                <div class="course-info">
+                  <div class="course-profile">
+                    <img src="${course.author.profileImage}" alt="" class="profile">
+                    <span>${course.author.username}</span>
+                  </div>
+                  <div class="course-stats">
                     <div class="stat-item">
                         <svg class="stat-icon" viewBox="0 0 24 24">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -117,13 +148,22 @@ function renderCourses() {
                         </svg>
                         <span>${course.saves}</span>
                     </div>
+                  </div>
                 </div>
+
             </div>
         </div>
-    `,
-    )
-    .join("")
-
-  // Update course count
-  courseCount.textContent = `${filteredCourses.length} ชี่`
+    `;
+  });
+  list.innerHTML = htmlContent;
 }
+
+
+document.addEventListener('DOMContentLoaded', ()=> {
+  renderCourse();
+})
+
+const read = (id) => {
+  console.log(id);
+}
+
