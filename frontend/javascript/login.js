@@ -33,10 +33,9 @@ const handleLogin = async (e) => {
         if(response.ok && data.token) {
             localStorage.setItem('authToken', data.dataToken);
             localStorage.setItem('username',username);
-            console.log("Login successfully");
-            loginMessage.textContent = data.message;
             // updateNavbar();
-            // closePopup();
+            closePopup('login-form');
+            window.location.reload()
         }else {
             loginMessage.textContent = data.error || "Invalid username or password";
         }
