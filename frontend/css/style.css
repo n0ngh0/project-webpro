@@ -317,6 +317,20 @@ h3 {
   fill: none;
 }
 
+.stat-item:hover {
+  cursor: pointer;
+}
+.course-profile:hover {
+    cursor: pointer;
+}
+.course-tag:hover {
+    cursor: pointer;
+    background-color: #e5e7eb;
+}
+.course-code:hover {
+    cursor: pointer;
+    box-shadow: 0px 0px 4px #F8AD24;
+}
 
 
 
