@@ -6,7 +6,6 @@ const renderCourse = (coursesData) => {
 
   coursesData.forEach((course) => {
 
-    // --- แปลง tags ให้เป็น array ปลอดภัย ---
     let tags = course.tags;
     if (!tags) {
       tags = [];
