@@ -11,6 +11,7 @@ router.get('/', async (req, res) => {
                 n.note_id AS id,
                 n.title AS note_title,
                 n.file_url AS file_img,
+                u.file_img as profile,
                 n.views,
                 s.subject_code AS note_code,
                 s.subject_name,

@@ -49,7 +49,10 @@ router.post('/', async (req, res) => {
         };
 
         const [result] = await pool.query("INSERT INTO users SET ?",newUser);
-        res.status(200).json({message:'Registered Successfully'});
+        const token = jwt.sign(
+            { id: result.insertId,user: result.username },JWT_SECRET,{ expiresIn: '1h' }
+        );
+        res.status(200).json({message:'Registered Successfully',token: token, userId: result.insertId});
     }catch(err) {
         console.error('Error during registration:', err.message);
 
