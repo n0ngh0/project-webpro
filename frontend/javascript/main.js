@@ -5,7 +5,6 @@ const renderCourse = (coursesData) => {
   let htmlContent = "";
 
   coursesData.forEach((course) => {
-
     let tags = course.tags;
     if (!tags) {
       tags = [];
@@ -39,7 +38,7 @@ const renderCourse = (coursesData) => {
 
             <div class="course-info">
                 <div class="course-profile">
-                    <img src="default-profile.png" alt="" class="profile">
+                    <img src="${course.profile}" alt="" class="profile">
                     <span>${course.uploader}</span>
                 </div>
 

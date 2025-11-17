@@ -1,4 +1,5 @@
 const express = require('express');
+const multer = require('multer');
 
 const pool = require('./connection');
 
@@ -48,6 +49,10 @@ router.get('/', async (req, res) => {
         console.error(err);
         res.status(500).json({ message: "Something went wrong" });
     }
+});
+
+router.post('/', async (req, res) => {
+
 });
 
 

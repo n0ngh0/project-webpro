@@ -66,7 +66,17 @@ nav button#login_btn:hover {
     cursor: pointer;
     background-color: #E3A023;
 }
-
+nav img{
+   width: 40px;
+   height: 40px;
+   border-radius: 50%;
+   box-shadow: 0px 0px 2px #111827;
+   display: none;
+   cursor: pointer;
+}
+nav img:hover {
+    box-shadow: 0px 0px 5px #c98a15;
+}
 /* Form Popup*/
 .form{
     display: none;
@@ -187,6 +197,7 @@ h3 {
 
 .course-card:hover {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
 }
 
 .course-image {
@@ -293,7 +304,7 @@ h3 {
    width: 20px;
    height: 20px;
    border-radius: 50%;
-   border: 1px solid red;
+   box-shadow: 0px 0px 2px #111827;
 }
 .course-stats {
   display: flex;
