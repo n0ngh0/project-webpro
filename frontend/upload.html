@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<link rel="stylesheet" href="css/best.css">
+<body>
+  <main class="page-wrapper">
+
+    <div class="container">
+
+      <a href="#" class="back-link">← กลับไปหน้าหลัก</a>
+      <h1 class="title">อัปโหลดโน้ตของคุณ</h1>
+      <p class="subtitle">แชร์ความรู้ของคุณอย่างง่ายๆ</p>
+
+      <!-- Card -->
+      <div class="card">
+
+        <form>
+
+          <!-- Upload Zone -->
+          <div class="upload-box">
+            <input type="file" id="file" hidden>
+            <label for="file" class="dropzone">
+              <div class="icon">⬆</div>
+              <p>ลากไฟล์มาวางที่นี่<br>หรือคลิกเพื่อเลือกไฟล์</p>
+            </label>
+          </div>
+
+          <!-- Title -->
+          <div class="form-group">
+            <label>ชื่อโน้ต *</label>
+            <input type="text" placeholder="เช่น โปรแกรมหน้า 101">
+          </div>
+
+          <!-- Description -->
+          <div class="form-group">
+            <label>คำอธิบาย</label>
+            <textarea placeholder="อธิบายเกี่ยวกับไฟล์หรือเนื้อหาของคุณ..."></textarea>
+          </div>
+
+          <!-- Category -->
+          <div class="form-group">
+            <label>วิชา *</label>
+            <select>
+              <option>เลือกวิชา</option>
+            </select>
+          </div>
+
+          <!-- Tags -->
+          <div class="form-group">
+            <label>แท็ก *</label>
+            <input type="text" placeholder="กด Enter เพื่อเพิ่มแท็ก">
+          </div>
+
+          <!-- Buttons -->
+          <div class="form-footer">
+            <button type="submit" class="btn-primary">อัปโหลดโน้ต</button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+
+  </main>
+</body>
+
+</html>
