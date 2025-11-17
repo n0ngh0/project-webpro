@@ -11,37 +11,33 @@
 
     <div class="container">
 
-      <a href="#" class="back-link">← กลับไปหน้าหลัก</a>
+      <a href="#" class="back-link" onclick="window.location.href=`main.html`">← กลับไปหน้าหลัก</a>
       <h1 class="title">อัปโหลดโน้ตของคุณ</h1>
       <p class="subtitle">แชร์ความรู้ของคุณอย่างง่ายๆ</p>
 
       <!-- Card -->
       <div class="card">
 
-        <form>
+        <form id="upload-form">
 
           <!-- Upload Zone -->
           <div class="upload-box">
-            <input type="file" id="file" hidden>
+            <input type="file" id="file" name="file" required hidden>
             <label for="file" class="dropzone">
               <div class="icon">⬆</div>
               <p>ลากไฟล์มาวางที่นี่<br>หรือคลิกเพื่อเลือกไฟล์</p>
             </label>
-          </div>
-
-          <!-- Title -->
+          </div>       
           <div class="form-group">
             <label>ชื่อโน้ต *</label>
             <input type="text" placeholder="เช่น โปรแกรมหน้า 101">
           </div>
 
-          <!-- Description -->
           <div class="form-group">
             <label>คำอธิบาย</label>
             <textarea placeholder="อธิบายเกี่ยวกับไฟล์หรือเนื้อหาของคุณ..."></textarea>
           </div>
 
-          <!-- Category -->
           <div class="form-group">
             <label>วิชา *</label>
             <select>
@@ -49,11 +45,11 @@
             </select>
           </div>
 
-          <!-- Tags -->
+
           <div class="form-group">
             <label>แท็ก *</label>
             <input type="text" placeholder="กด Enter เพื่อเพิ่มแท็ก">
-          </div>
+          </div> 
 
           <!-- Buttons -->
           <div class="form-footer">
@@ -67,5 +63,5 @@
 
   </main>
 </body>
-
+<script src="javascript/upload.js"></script>
 </html>

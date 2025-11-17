@@ -1,5 +1,6 @@
 const express = require('express');
 const multer = require('multer');
+const path = require('path');
 
 const pool = require('./connection');
 
@@ -51,9 +52,31 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.post('/', async (req, res) => {
 
-});
+// const storage = multer.diskStorage({
+//     destination: function (req, file, cb) {
+//         cb(null, 'src/');
+//     },
+//     filename: function (req, file, cb) {
+//         const uniqueSuffix = Date.now();
+//         cb(null, uniqueSuffix + '-' + file.originalname);
+//     }
+// });
+// const upload = multer({ storage: storage });
+
+
+// router.post('/', upload.single('file'), async (req, res) => {
+//     const Info = req.body;
+//     try {
+//         if (!req.file) {
+//             return res.status(400).json({ message: "File Not Found" });
+//         }
+//         console.log(req.file);  
+
+//     }catch(err) {
+//         res.status(500).json({message: "Something went wrong"});
+//     }
+// });
 
 
 module.exports = router

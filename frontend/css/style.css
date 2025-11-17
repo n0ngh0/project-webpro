@@ -36,6 +36,7 @@ nav button#login_btn {
     height: 40px;
     transition: all 0.2s ease;
     font-size: 14px;
+    display: none;
 }
 nav .search {
     position: relative;
@@ -50,6 +51,9 @@ nav .search input{
     padding: 0px 50px;
     font-weight: 500;
     font-size: 16px;
+}
+.right {
+    width: 100px;
 }
 nav .search i {
     position: absolute;

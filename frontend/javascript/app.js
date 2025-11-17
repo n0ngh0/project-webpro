@@ -137,5 +137,8 @@ const UpdateNavbar =  async () => {
         }catch (err) {
             console.error("Something went wrong", err);
         }
+    }else {
+        document.getElementById('login_btn').style.display = "block";
+        document.getElementById('profile').style.display = "none";
     }
 }
