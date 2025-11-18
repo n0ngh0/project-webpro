@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>NoteUp</title>
 </head>
 <link rel="stylesheet" href="css/best.css">
 <body>
@@ -22,9 +22,9 @@
 
           <!-- Upload Zone -->
           <div class="upload-box">
-            <input type="file" id="file" name="file" required hidden>
+            <input type="file" id="file" name="file" hidden>
             <label for="file" class="dropzone">
-              <div class="icon">⬆</div>
+              <div class="icon"><i class="fa-solid fa-upload"></i></div>
               <p>ลากไฟล์มาวางที่นี่<br>หรือคลิกเพื่อเลือกไฟล์</p>
             </label>
           </div>       
@@ -50,7 +50,7 @@
             <label>แท็ก *</label>
             <input type="text" placeholder="กด Enter เพื่อเพิ่มแท็ก">
           </div> 
-
+          <p id="statusMessage"></p>
           <!-- Buttons -->
           <div class="form-footer">
             <button type="submit" class="btn-primary">อัปโหลดโน้ต</button>
@@ -63,5 +63,7 @@
 
   </main>
 </body>
+
+<script src="https://kit.fontawesome.com/97f6fe82ff.js" crossorigin="anonymous"></script>
 <script src="javascript/upload.js"></script>
 </html>

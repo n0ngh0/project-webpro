@@ -1,6 +1,8 @@
 const express = require('express');
-const multer = require('multer');
 const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
+const pdf = require('pdf2pic');
 
 const pool = require('./connection');
 
@@ -52,31 +54,49 @@ router.get('/', async (req, res) => {
     }
 });
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, './../frontend/src') 
+  },
+  filename: (req, file, cb) => {
+    const name = Date.now() + Math.round(Math.random() * 1E9);
+    cb(null, name + path.extname(file.originalname));
+  }
+});
 
-// const storage = multer.diskStorage({
-//     destination: function (req, file, cb) {
-//         cb(null, 'src/');
-//     },
-//     filename: function (req, file, cb) {
-//         const uniqueSuffix = Date.now();
-//         cb(null, uniqueSuffix + '-' + file.originalname);
-//     }
-// });
-// const upload = multer({ storage: storage });
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === 'application/pdf') {
+    cb(null, true);
+  } else {
+    cb(new Error('รับเฉพาะไฟล์ PDF เท่านั้น'), false);
+  }
+};
 
+const Upload = multer({
+    storage: storage,
+    fileFilter: fileFilter
+})
+console.log(Upload.storage);
+const options = {
+  saveFilename: "untitled", 
+  savePath: "./images",    
+  format: "png",
+};
 
-// router.post('/', upload.single('file'), async (req, res) => {
-//     const Info = req.body;
-//     try {
-//         if (!req.file) {
-//             return res.status(400).json({ message: "File Not Found" });
-//         }
-//         console.log(req.file);  
+router.post('/', Upload.single('file') , async (req, res) => {
+    const data = req.file;
 
-//     }catch(err) {
-//         res.status(500).json({message: "Something went wrong"});
-//     }
-// });
+    if(!data) {
+        return res.status(404).json({message: "File Not Found"});
+    }
+    console.log(req.file.path);
+    try{
+
+    }catch(err) {
+        console.log(err.message);
+        res.status(500).json({ message: "เกิดข้อผิดพลาดในการสร้างรูปปก" });
+    }
+});
 
 
 module.exports = router

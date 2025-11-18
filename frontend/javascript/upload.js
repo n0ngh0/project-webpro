@@ -1,37 +1,35 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const uploadForm = document.getElementById('upload-form');
-    uploadForm.addEventListener('submit', handleUpload);
-});
+const API = 'http://localhost:3000';
 
-const handleUpload = async (e) => {
-    e.preventDefault(); 
+form = document.getElementById('upload-form');
+form.addEventListener('submit', async (e)=> {
+    e.preventDefault();
+    const msg = document.getElementById('statusMessage');
+    const formData = new FormData(form);
 
-    const titleInput = document.getElementById('title');
-    const fileInput = document.getElementById('file');
-    
-    const formData = new FormData();
-    
-    // formData.append('title', titleInput.value); 
-    formData.append('file', fileInput.files[0]); 
+    const fileInput = document.getElementById('file'); // หรือ id ที่คุณตั้ง
 
-    console.log('กำลังส่งข้อมูล...');
+    if (fileInput.files.length === 0) {
+        alert("กรุณาเลือกไฟล์ PDF ก่อนกดปุ่มครับ");
+        return;
+    }
 
     try {
-        const response = await fetch('/', {
-            method: 'POST',
-            body: formData,
-        });
-
-        if (response.ok) {
+            msg.textContent = "กำลังอัปโหลด...";
+            const response = await fetch(`${API}/api/notes`, {
+                method: `POST`,
+                body: formData
+            });
+            
             const result = await response.json();
-            console.log('อัปโหลดสำเร็จ:', result);
-            alert(`อัปโหลดสำเร็จ: ${result.message}`);
-        } else {
-            console.error('อัปโหลดไม่สำเร็จ');
-            alert('อัปโหลดไม่สำเร็จ');
-        }
-    } catch (err) {
-        console.error('เกิดข้อผิดพลาด:', err);
-        alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+            if(response.ok) {
+                msg.textContent = "อัปโหลดสำเร็จ";
+            }else {
+                msg.textContent = "ไม่สามารถอัปโหลด";
+            }
+    }catch(err) {
+        console.log("Somethin went wrong");
     }
-};
+
+});
+
+
