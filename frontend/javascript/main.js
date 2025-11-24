@@ -16,12 +16,12 @@ const renderCourse = (coursesData) => {
         tags = [];
       }
     }
-
+    console.log(course);
     htmlContent += 
     `
     <div class="course-card">
         <div class="course-image">
-            <img src="${course.file_img || 'placeholder-image.png'}" alt="${course.note_title}">
+            <img src="/backend/public/${course.file_img || 'placeholder-image.png'}" alt="${course.note_title}">
         </div>
 
         <div class="course-body">

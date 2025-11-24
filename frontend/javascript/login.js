@@ -62,6 +62,7 @@ const handleSignUp = async (e) => {
     regMessage.textContent = 'กำลังโหลดข้อมูล...';
 
     if (password.value !== password2.value) {
+        regMessage.style.backgroundColor = "red";
         return regMessage.textContent = "รหัสผ่านไม่ตรงกัน";
     }
 
@@ -81,16 +82,18 @@ const handleSignUp = async (e) => {
         if (response.ok && data.token) {
             localStorage.setItem('authToken', data.token);
             localStorage.setItem('username', username.value);
-
+            regMessage.style.color = "green";
             closePopup('register-form');
             // window.location.reload();
         } else {
             regMessage.textContent = data.error || "สมัครสมาชิกไม่สำเร็จ";
+            regMessage.style.color = "red";
         }
 
     } catch (err) {
         console.error("Register error", err);
         regMessage.textContent = "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้";
+        regMessage.style.color = "red";
     }
 };
 

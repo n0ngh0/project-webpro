@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NoteUp</title>
+    <link rel="stylesheet" href="css/best.css">
 </head>
-<link rel="stylesheet" href="css/best.css">
 <body>
   <main class="page-wrapper">
 
@@ -15,43 +15,57 @@
       <h1 class="title">อัปโหลดโน้ตของคุณ</h1>
       <p class="subtitle">แชร์ความรู้ของคุณอย่างง่ายๆ</p>
 
-      <!-- Card -->
       <div class="card">
 
         <form id="upload-form">
 
-          <!-- Upload Zone -->
           <div class="upload-box">
-            <input type="file" id="file" name="file" hidden>
-            <label for="file" class="dropzone">
-              <div class="icon"><i class="fa-solid fa-upload"></i></div>
-              <p>ลากไฟล์มาวางที่นี่<br>หรือคลิกเพื่อเลือกไฟล์</p>
+            <input type="file" id="file-input" name="pdfFile" accept="application/pdf" hidden>
+            
+            <label for="file-input" class="dropzone" id="dropzone-label">
+              
+              <div id="upload-placeholder">
+                  <div class="icon"><i class="fa-solid fa-upload"></i></div>
+                  <p>ลากไฟล์มาวางที่นี่<br>หรือคลิกเพื่อเลือกไฟล์ PDF</p>
+              </div>
+
+              <div id="preview-container" style="display: none; text-align: center;">
+                  <img id="preview-img" src="" alt="Cover Preview" style="max-height: 200px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                  <p style="font-size: 12px; color: #666; margin-top: 10px;"></p>
+              </div>
+              
+              <p id="loading-text" style="display: none; color: #4f46e5;">กำลังสร้างรูปปก...</p>
+
             </label>
           </div>       
+
           <div class="form-group">
             <label>ชื่อโน้ต *</label>
-            <input type="text" placeholder="เช่น โปรแกรมหน้า 101">
+            <input type="text" name="title" placeholder="เช่น โปรแกรมหน้า 101" required>
           </div>
 
           <div class="form-group">
             <label>คำอธิบาย</label>
-            <textarea placeholder="อธิบายเกี่ยวกับไฟล์หรือเนื้อหาของคุณ..."></textarea>
+            <textarea name="description" placeholder="อธิบายเกี่ยวกับไฟล์หรือเนื้อหาของคุณ..."></textarea>
           </div>
 
           <div class="form-group">
             <label>วิชา *</label>
-            <select>
-              <option>เลือกวิชา</option>
+            <select name="subject_id" required>
+              <option value="">เลือกวิชา</option>
+              <option value="1">Intro to Programming</option>
+              <option value="2">Calculus 1</option>
+              <option value="3">General Physics</option>
             </select>
           </div>
 
-
           <div class="form-group">
             <label>แท็ก *</label>
-            <input type="text" placeholder="กด Enter เพื่อเพิ่มแท็ก">
+            <input type="text" name="tags" placeholder="เช่น coding, year1 (คั่นด้วย comma)">
           </div> 
-          <p id="statusMessage"></p>
-          <!-- Buttons -->
+          
+          <p id="statusMessage" style="text-align: center; margin-top: 10px; font-weight: bold;"></p>
+
           <div class="form-footer">
             <button type="submit" class="btn-primary">อัปโหลดโน้ต</button>
           </div>
@@ -62,8 +76,10 @@
     </div>
 
   </main>
-</body>
 
 <script src="https://kit.fontawesome.com/97f6fe82ff.js" crossorigin="anonymous"></script>
-<script src="javascript/upload.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="javascript/upload.js"></script> 
+
+</body>
 </html>
