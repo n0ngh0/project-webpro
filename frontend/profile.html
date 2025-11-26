@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoteUp - Profile</title>
+    <link rel="stylesheet" href="css/profile.css">
+</head>
+<body>
+
+    <div class="container">
+        <div class="card">
+            <div class="profile-header">
+                <div class="profile-info">
+                    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=200&q=80" alt="Avatar" class="profile-avatar-lg">
+                    <div class="profile-text">
+                        <h2>พุ่นแล้ว เสด็ปเพิ่น</h2>
+                        <p class="bio">น้องๆ ใจเย็นๆ พี่รู้พี่ฮอตแดด</p>
+                        <p class="join-date">เข้าร่วมเมื่อ มกราคม 2024</p>
+                    </div>
+                </div>
+                <div class="profile-actions">
+                    <a href="edit-profile.html" class="btn-sm"><i class="fa-solid fa-gear"></i> แก้ไขโปรไฟล์</a>
+                    <a href="#" class="btn-sm btn-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> ออกจากระบบ</a>
+                </div>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-item">
+                    <h3><i class="fa-solid fa-upload" style="font-size: 0.8em;"></i> 15</h3>
+                    <span>โน้ตที่อัปโหลด</span>
+                </div>
+                <div class="stat-item">
+                    <h3><i class="fa-regular fa-heart" style="font-size: 0.8em;"></i> 234</h3>
+                    <span>ถูกใจทั้งหมด</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tab-item" style="font-weight: 700;">โน้ตที่อัปโหลด</div>
+            <div class="tab-item">โน้ตที่ถูกใจ</div>
+            <div class="tab-item">รายการโปรด</div>
+        </div>
+
+        <div class="content-grid">
+            <div class="note-card">
+                <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=600&q=80" alt="Calculus" class="note-img">
+                <div class="note-body">
+                    <span class="tag-badge">MTH1101</span>
+                    <h3 class="note-title">สรุปเนื้อหาแคลคูลัส 1 บทที่ 1-5 พร้อมตัวอย่างโจทย์</h3>
+                    <div class="sub-tags">
+                        <span class="sub-tag">แคลคูลัส</span>
+                        <span class="sub-tag">อนุพันธ์</span>
+                        <span class="sub-tag">ปริพันธ์</span>
+                    </div>
+                    <button class="btn-read">อ่าน</button>
+                    <div class="note-footer">
+                        <div style="display:flex; align-items:center; gap:5px;">
+                            <div style="width:20px; height:20px; background:#ddd; border-radius:50%;"></div>
+                            <span>สมชาย ใจดี</span>
+                        </div>
+                        <div class="note-stats">
+                            <span><i class="fa-regular fa-eye"></i> 1234</span>
+                            <span><i class="fa-regular fa-heart"></i> 89</span>
+                            <span><i class="fa-regular fa-comment"></i> 12</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="note-card">
+                <img src="https://img.freepik.com/free-vector/programming-concept-illustration_114360-1351.jpg" alt="Programming" class="note-img">
+                <div class="note-body">
+                    <span class="tag-badge">CSS233</span>
+                    <h3 class="note-title">โปรเจคโปรจากพี่สุดหล่อ</h3>
+                    <div class="sub-tags">
+                        <span class="sub-tag">เว็บโปร</span>
+                        <span class="sub-tag">โปรเจค</span>
+                    </div>
+                    <button class="btn-read">อ่าน</button>
+                    <div class="note-footer">
+                        <div style="display:flex; align-items:center; gap:5px;">
+                            <div style="width:20px; height:20px; background:#ddd; border-radius:50%;"></div>
+                            <span>สมชาย ใจดี</span>
+                        </div>
+                        <div class="note-stats">
+                            <span><i class="fa-regular fa-eye"></i> 892</span>
+                            <span><i class="fa-regular fa-heart"></i> 67</span>
+                            <span><i class="fa-regular fa-comment"></i> 8</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
