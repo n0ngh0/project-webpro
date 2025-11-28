@@ -85,8 +85,12 @@ body {
     align-items: center;
     justify-content: center;
     gap: 5px;
+    transition: all 0.5s ease;
 }
-.btn-logout { color: red; border-color: #ffcccc; }
+.btn-sm:hover{background-color: var(--text-main); color: var(--white);}
+.btn-logout { color: red; border-color: #ffcccc; transition: all 0.5s ease;}
+.btn-logout:hover { background-color: red; color: #ffffff; border-color: #ffcccc; }
+
 
 .stats-row {
     display: flex;

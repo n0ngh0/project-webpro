@@ -8,6 +8,83 @@
 </head>
 <body>
 
+
+    <header>    
+        <nav>
+            <div class="logo"><h1 onclick="window.location.reload()">NoteUp</h1></div>
+            <div class="search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="search" placeholder="ค้นหาโน้ต วิชา หรือแท๊ก...">
+            </div>
+            <div class="right">
+                <button id="login_btn" onclick="openPopup('login-form')">เข้าสู่ระบบ</button>
+                <img id="profile" onclick="window.location.href=`profile.html`">
+            </div>
+        </nav>
+    </header>
+    <form class="form" id="login-form">
+    <div class="form-data">
+        <i class="fa-solid fa-plus" style="transform: rotate(45deg);" onclick="closePopup('login-form')"></i>
+        <h3>เข้าสู่ระบบ</h3>
+        <div class="form-group">
+            <label class="form-label">ชื่อผู้ใช้ <span style="color: red;">*</span></label>
+            <input type="text" class="form-input" id="username" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">รหัสผ่าน <span style="color: red;">*</span></label>
+            <input type="password" class="form-input" id="password" required> 
+        </div>
+        <div class="form-link">
+            <div id="login-message"></div> 
+        </div>
+        <button type="submit" class="form-button">เข้าสู่ระบบ</button> 
+        <div class="form-link">
+            ยังไม่มีบัญชี? <a onclick="switchToSignUp()">สมัครสมาชิก</a>
+        </div>
+    </div>
+    </form>
+    <form class="form" id="register-form">
+        <div class="form-data">
+            <i class="fa-solid fa-plus" style="transform: rotate(45deg);" onclick="closePopup('register-form')"></i>
+            <h3>สมัครสมาชิก</h3>
+            <div class="form-group">
+                <label class="form-label">ชื่อผู้ใช้ <span style="color: red;">*</span></label>
+                <input type="text" class="form-input" id="reg_username" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">อีเมล <span style="color: red;">*</span></label>
+                <input type="email" class="form-input"  id="reg_email" required> 
+            </div>
+            <div class="form-group">
+                <label class="form-label">รหัสผ่าน <span style="color: red;">*</span></label>
+                <input type="password" class="form-input" id="reg_password" required> 
+            </div>
+            <div class="form-group">
+                <label class="form-label">ยืนยันรหัสผ่าน <span style="color: red;">*</span></label>
+                <input type="password" class="form-input" id="check_password" required> 
+            </div>
+            <div class="form-link">
+                <div id="reg-message"></div> 
+            </div>
+            <button type="submit" class="form-button">สมัครสมาชิก</button> 
+        <div class="form-link">
+                มีบัญชีอยู่แล้ว? <a onclick="switchToSignIn()">เข้าสู่ระบบ</a>
+            </div>
+        </div>
+    </form>
+    <div class="upload-button" onclick="window.location.href=`upload.html`">
+        <i class="fa-solid fa-plus"></i>
+    </div>
+
+
+    <!--  -->
+    <!--  -->
+    <!--  -->
+    <!--  -->
+    <!--  -->
+    <!--  -->
+
+
     <div class="container">
         <!-- Hero Section -->
         <div class="container_header">
@@ -27,8 +104,8 @@
             </main>
         </div>
     </div>
-
-    <script src="javascript/main.js"></script>
+    <script src="javascript/app.js"></script>
+    <script src="https://kit.fontawesome.com/97f6fe82ff.js" crossorigin="anonymous"></script>
 </body>
 </html>
 

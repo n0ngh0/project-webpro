@@ -109,7 +109,7 @@ router.get('/profile/:id', async (req, res) => {
     try {
         const id = req.params.id;
 
-        const [rows, fields] = await pool.query("SELECT file_img FROM users WHERE user_id = ?",id);
+        const [rows, fields] = await pool.query("SELECT * FROM users WHERE user_id = ?",id);
 
         res.json(rows);
     }catch(err) {

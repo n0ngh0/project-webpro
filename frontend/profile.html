@@ -12,16 +12,21 @@
         <div class="card">
             <div class="profile-header">
                 <div class="profile-info">
-                    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=200&q=80" alt="Avatar" class="profile-avatar-lg">
+                    <img id="profile-img" src="" alt="Avatar" class="profile-avatar-lg">
+                    
                     <div class="profile-text">
-                        <h2>พุ่นแล้ว เสด็ปเพิ่น</h2>
-                        <p class="bio">น้องๆ ใจเย็นๆ พี่รู้พี่ฮอตแดด</p>
-                        <p class="join-date">เข้าร่วมเมื่อ มกราคม 2024</p>
+                        <h2 id="profile-username">กำลังโหลด...</h2>
+                        
+                        <p class="bio" id="profile-email">...</p>
+                        
+                        <p class="join-date" id="profile-join-date">...</p>
                     </div>
                 </div>
                 <div class="profile-actions">
                     <a href="edit-profile.html" class="btn-sm"><i class="fa-solid fa-gear"></i> แก้ไขโปรไฟล์</a>
-                    <a href="#" class="btn-sm btn-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> ออกจากระบบ</a>
+                    <a href="#" class="btn-sm btn-logout" onclick="handleLogout()">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> ออกจากระบบ
+                    </a>
                 </div>
             </div>
 
@@ -70,7 +75,7 @@
             </div>
 
             <div class="note-card">
-                <img src="https://img.freepik.com/free-vector/programming-concept-illustration_114360-1351.jpg" alt="Programming" class="note-img">
+                <img src="" id="profile-img" alt="Programming" class="note-img">
                 <div class="note-body">
                     <span class="tag-badge">CSS233</span>
                     <h3 class="note-title">โปรเจคโปรจากพี่สุดหล่อ</h3>
@@ -95,4 +100,6 @@
         </div>
     </div>
 </body>
+
+<script src="javascript/app.js"></script>
 </html>
