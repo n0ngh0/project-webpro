@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
                 n.note_id AS id,
                 n.title AS note_title,
                 n.thumbnail_url AS file_img,
-                u.file_img as profile,
+                u.file_img as profile,u.nickname,
                 n.views,
                 s.subject_code AS note_code,
                 s.subject_name,
@@ -34,6 +34,157 @@ router.get('/', async (req, res) => {
             GROUP BY n.note_id, n.title, n.file_url, n.views, s.subject_code, s.subject_name, u.username
             ORDER BY n.created_at DESC;
         `);
+
+        // --- แปลง tags จาก JSON string → array ---
+        rows.forEach(row => {
+            if (typeof row.tags === "string") {
+                try {
+                    row.tags = JSON.parse(row.tags);
+                } catch {
+                    row.tags = [];
+                }
+            }
+        });
+
+        res.json(rows);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Something went wrong" });
+    }
+});
+
+router.get('/:id', async (req, res) => {
+    try {
+        const id = req.params.id
+        const [rows] = await pool.query(`
+            SELECT
+                n.note_id AS id,
+                n.title AS note_title,
+                n.thumbnail_url AS file_img,
+                u.file_img as profile,u.nickname,
+                n.views,
+                s.subject_code AS note_code,
+                s.subject_name,
+                u.username AS uploader,
+                COUNT(DISTINCT c.comment_id) AS comment_count,
+                (
+                    SELECT JSON_ARRAYAGG(t.tag_name)
+                    FROM note_tags nt
+                    JOIN tags t ON nt.tag_id = t.tag_id
+                    WHERE nt.note_id = n.note_id
+                ) AS tags
+            FROM notes AS n
+            JOIN subjects AS s ON n.subject_id = s.subject_id
+            JOIN users AS u ON n.uploader_id = u.user_id
+            LEFT JOIN comments AS c ON n.note_id = c.note_id
+            WHERE u.user_id = ?
+            GROUP BY n.note_id, n.title, n.file_url, n.views, s.subject_code, s.subject_name, u.username
+            ORDER BY n.created_at DESC;
+        `,[id]);
+
+        // --- แปลง tags จาก JSON string → array ---
+        rows.forEach(row => {
+            if (typeof row.tags === "string") {
+                try {
+                    row.tags = JSON.parse(row.tags);
+                } catch {
+                    row.tags = [];
+                }
+            }
+        });
+
+        res.json(rows);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Something went wrong" });
+    }
+});
+
+router.get('/:id/favorites', async (req, res) => {
+    const id = req.params.id
+    try {
+        const [rows] = await pool.query(`
+            SELECT 
+               n.note_id AS id,
+                n.title AS note_title,
+                n.thumbnail_url AS file_img,
+                u.file_img as profile,u.nickname,
+                n.views,
+                s.subject_code AS note_code,
+                s.subject_name,
+                u.username AS uploader,
+                COUNT(DISTINCT c.comment_id) AS comment_count,
+                (
+                    SELECT JSON_ARRAYAGG(t.tag_name)
+                    FROM note_tags nt
+                    JOIN tags t ON nt.tag_id = t.tag_id
+                    WHERE nt.note_id = n.note_id
+                ) AS tags
+            FROM notes n
+            JOIN favorites f ON n.note_id = f.note_id -- JOIN ตาราง favorites
+            JOIN users u ON n.uploader_id = u.user_id
+            JOIN subjects s ON n.subject_id = s.subject_id
+            LEFT JOIN comments c ON n.note_id = c.note_id
+            LEFT JOIN note_tags nt ON n.note_id = nt.note_id
+            LEFT JOIN tags t ON nt.tag_id = t.tag_id
+            WHERE f.user_id = ?
+            GROUP BY n.note_id
+            ORDER BY f.created_at DESC
+        `,[id]);
+
+        // --- แปลง tags จาก JSON string → array ---
+        rows.forEach(row => {
+            if (typeof row.tags === "string") {
+                try {
+                    row.tags = JSON.parse(row.tags);
+                } catch {
+                    row.tags = [];
+                }
+            }
+        });
+
+        res.json(rows);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Something went wrong" });
+    }
+});
+
+
+router.get('/:id/likes', async (req, res) => {
+    const id = req.params.id
+    try {
+        const [rows] = await pool.query(`
+            SELECT 
+                n.note_id AS id,
+                n.title AS note_title,
+                n.thumbnail_url AS file_img,
+                u.file_img as profile,u.nickname,
+                n.views,
+                s.subject_code AS note_code,
+                s.subject_name,
+                u.username AS uploader,
+                COUNT(DISTINCT c.comment_id) AS comment_count,
+                (
+                    SELECT JSON_ARRAYAGG(t.tag_name)
+                    FROM note_tags nt
+                    JOIN tags t ON nt.tag_id = t.tag_id
+                    WHERE nt.note_id = n.note_id
+                ) AS tags
+            FROM notes n
+            JOIN likes l ON n.note_id = l.note_id
+            JOIN users u ON n.uploader_id = u.user_id
+            JOIN subjects s ON n.subject_id = s.subject_id
+            LEFT JOIN note_tags nt ON n.note_id = nt.note_id
+            LEFT JOIN comments c ON n.note_id = c.note_id
+            LEFT JOIN tags t ON nt.tag_id = t.tag_id
+            WHERE l.user_id = ?
+            GROUP BY n.note_id
+            ORDER BY l.created_at DESC
+        `,[id]);
 
         // --- แปลง tags จาก JSON string → array ---
         rows.forEach(row => {

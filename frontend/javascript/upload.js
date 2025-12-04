@@ -32,7 +32,7 @@ fileInput.addEventListener('change', async (e) => {
         const pdf = await pdfjsLib.getDocument(fileURL).promise;
         const page = await pdf.getPage(1);
 
-        const scale = 0.5;
+        const scale = 1.5;
         const viewport = page.getViewport({ scale: scale });
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
@@ -46,7 +46,7 @@ fileInput.addEventListener('change', async (e) => {
             previewImg.src = URL.createObjectURL(blob);
             loadingText.style.display = 'none';
             previewContainer.style.display = 'block';
-        }, 'image/jpeg', 0.8);
+        }, 'image/jpeg', 0.9);
 
     } catch (err) {
         console.error(err);

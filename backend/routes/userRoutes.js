@@ -3,6 +3,8 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const pool = require('./connection');
+const multer = require('multer');
+const path = require('path');
 
 const JWT_SECRET = 'jwtthesecret'; 
 
@@ -75,20 +77,60 @@ router.get('/', async (req, res)=> {
     }
 });
 
-router.put('/:id', async (req,res) => {
-    const id = req.params.id;
-    const newInfo = req.body;
 
-    try{
-        const [results] = await pool.query("UPDATE users SET ? WHERE user_id = ?", [newInfo,id]);
-        if(results.affectedRows === 0) {
-            return res.status(404).json({message: "User Id " + id + " is Not Found"});
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, '../../frontend/img'));
+    },
+    filename: function (req, file, cb) {
+        cb(null, 'profile-' + Date.now() + path.extname(file.originalname));
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+        cb(null, true); 
+    } else {
+        cb(new Error('อนุญาตเฉพาะไฟล์รูปภาพเท่านั้น (PNG, JPG)!'), false);
+    }
+};
+
+
+const upload = multer({ 
+    storage: storage, 
+    fileFilter: fileFilter,
+    limits: { fileSize: 2 * 1024 * 1024 }
+});
+
+router.put('/update/:id', upload.single('profile_img'), async (req, res) => {
+    const userId = req.params.id;
+
+    const { username, email, is_public, show_stats } = req.body;
+
+    let updateData = {
+        nickname: username,
+        email: email,
+        is_public: (is_public === 'true' || is_public === 'on') ? 1 : 0,
+        show_stats: (show_stats === 'true' || show_stats === 'on') ? 1 : 0
+    };
+
+
+    if (req.file) {
+        updateData.file_img = 'img/' + req.file.filename; 
+    }
+
+    try {
+        const [results] = await pool.query("UPDATE users SET ? WHERE user_id = ?", [updateData, userId]);
+
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ message: "ไม่พบผู้ใช้งาน ID " + userId });
         }
-        res.status(200).json({message: "Updated Successfully"}); 
 
-    }catch(err) {
-        console.error(err.message);
-        res.status(500).json({message: "Something went wrong"});
+        res.status(200).json({ message: "อัปเดตข้อมูลสำเร็จ"});
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Database Error: " + err.message });
     }
 });
 

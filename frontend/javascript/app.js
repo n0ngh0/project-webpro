@@ -37,16 +37,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerForm = document.getElementById('register-form');
 
     if (loginForm) {
-        loginForm.addEventListener('click', (e)=> {
-            if(e.target.id === 'login-form') closePopup('login-form');
-        });
+        // loginForm.addEventListener('click', (e)=> {
+        //     if(e.target.id === 'login-form') closePopup('login-form');
+        // });
         loginForm.addEventListener('submit', handleLogin);
     }
 
     if (registerForm) {
-        registerForm.addEventListener('click', (e)=>{
-            if (e.target.id === 'register-form') closePopup('register-form');
-        });
+        // registerForm.addEventListener('click', (e)=>{
+        //     if (e.target.id === 'register-form') closePopup('register-form');
+        // });
         registerForm.addEventListener('submit', handleSignUp);
     }
 
@@ -60,6 +60,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if(document.getElementById('course-list')) {
         fetchCourses();
+    }
+    if(document.getElementById('course-profile-list')) {
+        fetchProfileCourses();
+        if (plist) {
+            const btn = document.querySelector('.tab-btn'); 
+            switchTab('uploads', btn);
+        }
     }
 });
 
@@ -207,7 +214,7 @@ const FetchProfileData = async () => {
             const joinDateEl = document.getElementById('profile-join-date');
 
             if(imgElement) imgElement.src = user.file_img;
-            if(usernameEl) usernameEl.textContent = user.username;
+            if(usernameEl) usernameEl.textContent = user.nickname + `(${user.username})`;
             if(emailEl) emailEl.textContent = user.email;
             
             if(joinDateEl) {
@@ -237,6 +244,8 @@ const handleLogout = () => {
 
 // Fecthing Course
 const list = document.getElementById('course-list');
+const plist = document.getElementById('course-profile-list');
+
 
 const renderCourse = (coursesData) => {
   let htmlContent = "";
@@ -274,7 +283,7 @@ const renderCourse = (coursesData) => {
             <div class="course-info">
                 <div class="course-profile">
                     <img src="${course.profile}" alt="" class="profile">
-                    <span>${course.uploader}</span>
+                    <span>${course.nickname}</span>
                 </div>
 
                 <div class="course-stats">
@@ -300,7 +309,8 @@ const renderCourse = (coursesData) => {
     `;
   });
 
-  list.innerHTML = htmlContent;
+    if(list) list.innerHTML = htmlContent;
+    else plist.innerHTML = htmlContent;
 };
 
 
@@ -319,5 +329,65 @@ const fetchCourses = async () => {
     console.error('เกิดข้อผิดพลาด:', error);
     list.innerHTML = '<p>เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
   }
+};
+const fetchProfileCourses = async () => {
+    const id = localStorage.getItem('user_id');  
+    try {
+    const response = await fetch(`${API}/api/notes/${id}`);
+
+    if (!response.ok) {
+      throw new Error('ไม่สามารถดึงข้อมูลได้');
+    }
+
+    const coursesData = await response.json();
+    renderCourse(coursesData);
+
+  } catch (error) {
+    console.error('เกิดข้อผิดพลาด:', error);
+    list.innerHTML = '<p>เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
+  }
+};
+
+const switchTab = async (type, btnElement) => {
+    const plist = 'course-profile-list';
+    const container = document.getElementById(plist);
+    const userId = localStorage.getItem('user_id');
+
+    if (!container || !userId) return;
+
+    const allTabs = Array.from(document.querySelectorAll('.tab-item'));
+    const index = allTabs.indexOf(btnElement);
+
+    const box = document.querySelector('.tabs-container');
+    box.setAttribute('data-active', index);
+
+    allTabs.forEach(btn => btn.classList.remove('active'));
+    btnElement.classList.add('active');
+
+    container.innerHTML = '<p style="text-align:center; padding: 20px;">กำลังโหลด...</p>';
+
+    try {
+        let endpoint = '';
+        
+        if (type === 'uploads') {
+            endpoint = `${API}/api/notes/${userId}`;
+        } else if (type === 'likes') {
+            endpoint = `${API}/api/notes/${userId}/likes`;
+        } else if (type === 'favorites') {
+            endpoint = `${API}/api/notes/${userId}/favorites`;
+        }
+
+        const response = await fetch(endpoint);
+
+        if (!response.ok) throw new Error('Failed to fetch');
+
+        const coursesData = await response.json();
+
+        renderCourse(coursesData, plist);
+
+    } catch (error) {
+        console.error('Error fetching tab data:', error);
+        container.innerHTML = '<p style="positon: absolute; top: 50%;text-align:center; color: #888;">ไม่พบข้อมูลรายการนี้</p>';
+    }
 };
 

@@ -8,87 +8,92 @@
 </head>
 <body>
 
-    <div class="container edit-container">
+<div class="container edit-container">
         <div class="card">
-            <h2 style="margin-bottom: 20px;">แก้ไขโปรไฟล์</h2>
+            <h2 style="margin-bottom: 30px;">แก้ไขโปรไฟล์</h2>
 
-            <div class="form-group">
-                <label>รูปโปรไฟล์</label>
-                <div class="avatar-upload">
-                    <div class="avatar-wrapper">
-                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&q=80" alt="Profile" class="profile-avatar-lg">
-                        <div class="camera-icon"><i class="fa-solid fa-camera"></i></div>
+            <form id="edit-profile-form">
+                
+                <div class="form-group">
+                    <label>รูปโปรไฟล์</label>
+                    <div class="avatar-upload">
+                        <div class="avatar-wrapper">
+                            <img id="preview-img" src="../img/default.png" alt="" class="profile-avatar-lg">
+                            
+                            <div class="camera-icon" onclick="document.getElementById('file-input').click()">
+                                <i class="fa-solid fa-camera"></i>
+                            </div>
+                        </div>
+                        
+                        <div style="flex: 1;">
+                            <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">อัปโหลดรูปภาพขนาดไม่เกิน 2MB</p>
+                            
+                            <input type="file" id="file-input" name="profile_img" accept="image/*" hidden>
+                            
+                            <button type="button" class="btn-outline" onclick="document.getElementById('file-input').click()">
+                                เลือกรูปภาพ
+                            </button>
+                            
+                            <button type="button" class="btn-delete-img" onclick="resetImage()" style="border:none; color: #dc3545;">
+                                ลบรูปภาพ
+                            </button>
+                        </div>
                     </div>
-                    <div style="flex: 1;">
-                        <p style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">อัปโหลดรูปภาพขนาดไม่เกิน 5MB</p>
-                        <button class="btn-outline">เลือกรูปภาพ</button>
-                        <button class="btn-outline" style="border:none; color: #666;">ลบรูปภาพ</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="username">ชื่อ</label>
+                    <input type="text" id="username" class="form-control" required placeholder="ชื่อผู้ใช้งาน">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">อีเมล</label>
+                    <input type="email" id="email" class="form-control" required placeholder="example@email.com">
+                </div>
+
+                <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+
+                <h3 style="margin-bottom: 20px; font-size: 1.2rem;">การตั้งค่าความเป็นส่วนตัว</h3>
+                
+                <div class="toggle-group">
+                    <div class="toggle-label">
+                        <h4>แสดงโปรไฟล์สาธารณะ</h4>
+                        <p>ให้ผู้อื่นสามารถค้นหาและดูโปรไฟล์ของคุณได้</p>
                     </div>
+                    <label class="switch">
+                        <input type="checkbox" id="is-public">
+                        <span class="slider"></span>
+                    </label>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label>ชื่อ</label>
-                <input type="text" class="form-control" value="พุ่นแล้ว เสด็ปเพิ่น">
-            </div>
-
-            <div class="form-group">
-                <label>ประวัติส่วนตัว</label>
-                <textarea class="form-control">ใจเย็นๆนะน้องๆ</textarea>
-                <div style="text-align: right; font-size: 0.7rem; color: #aaa; margin-top: 5px;">เหลือ 150 ตัวอักษร</div>
-            </div>
-
-            <div class="form-group">
-                <label>อีเมล</label>
-                <input type="email" class="form-control" value="punlaw@example.com">
-            </div>
-
-            <div class="form-group">
-                <label>ลิงก์โซเชียลมีเดีย</label>
-                <div class="social-input">
-                    <input type="text" class="form-control" value="https://facebook.com/username">
-                    <i class="fa-solid fa-xmark remove-icon"></i>
+                <div class="toggle-group">
+                    <div class="toggle-label">
+                        <h4>แสดงสถิติ</h4>
+                        <p>แสดงจำนวนโน้ต รายการโปรด และถูกใจในโปรไฟล์</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="show-stats">
+                        <span class="slider"></span>
+                    </label>
                 </div>
-                <div class="social-input">
-                    <input type="text" class="form-control" value="https://twitter.com/username">
-                    <i class="fa-solid fa-xmark remove-icon"></i>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-save">บันทึกการเปลี่ยนแปลง</button>
+                    <button type="button" class="btn-cancel" onclick="window.location.href='profile.html'">ยกเลิก</button>
                 </div>
-                <button class="btn-outline" style="margin-top: 5px;">+ เพิ่มลิงก์</button>
-            </div>
 
-            <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-
-            <h3 style="margin-bottom: 20px; font-size: 1.1rem;">การตั้งค่าความเป็นส่วนตัว</h3>
-            
-            <div class="toggle-group">
-                <div class="toggle-label">
-                    <h4>แสดงโปรไฟล์สาธารณะ</h4>
-                    <p>ให้ผู้อื่นสามารถค้นหาและดูโปรไฟล์ของคุณได้</p>
-                </div>
-                <label class="switch">
-                    <input type="checkbox" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <div class="toggle-group">
-                <div class="toggle-label">
-                    <h4>แสดงสถิติ</h4>
-                    <p>แสดงจำนวนโน้ต รายการโปรด และถูกใจในโปรไฟล์</p>
-                </div>
-                <label class="switch">
-                    <input type="checkbox" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <div class="form-actions">
-                <button class="btn-save">บันทึกการเปลี่ยนแปลง</button>
-                <a href="profile.html" class="btn-cancel" style="text-align: center; text-decoration: none; color: black;">ยกเลิก</a>
-            </div>
-
+            </form>
         </div>
     </div>
 
+    <script src="javascript/edit-profile.js"></script>
+    <script src="javascript/app.js"></script>
+    
+    <script>
+        function resetImage() {
+            document.getElementById('file-input').value = "";
+            document.getElementById('preview-img').src = "../img/default.png";
+        }
+    </script>
 </body>
 </html>
