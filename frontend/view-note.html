@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoteUp - View Note</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/note.css">
+</head>
+
+<body>
+
+    <div class="container">
+        
+        <div class="back-header">
+            <a href="#" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+            <div class="page-title">โปรเจคเว็บโปรจากพี่สุดหล่อ</div>
+        </div>
+
+        <div class="viewer-container">
+            <div class="viewer-toolbar">
+                <div class="toolbar-group">
+                    <i class="fa-solid fa-bars toolbar-icon"></i>
+                    <span>งานนำเสนอ PowerPoint</span>
+                </div>
+                <div class="toolbar-group">
+                    <span class="page-counter">1 / 8</span>
+                    <i class="fa-solid fa-minus toolbar-icon" style="font-size: 0.8em;"></i>
+                    <span>100%</span>
+                    <i class="fa-solid fa-plus toolbar-icon" style="font-size: 0.8em;"></i>
+                </div>
+                <div class="toolbar-group">
+                    <i class="fa-solid fa-download toolbar-icon"></i>
+                    <i class="fa-solid fa-print toolbar-icon"></i>
+                    <i class="fa-solid fa-ellipsis-vertical toolbar-icon"></i>
+                </div>
+            </div>
+
+            <div class="viewer-canvas">
+                <div class="document-page">
+                    <img src="https://img.freepik.com/free-vector/programming-concept-illustration_114360-1351.jpg" alt="Document Content">
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom: 15px; font-size: 1rem; font-weight: 600;">ผู้แชร์ไฟล์</h3>
+            
+            <div class="uploader-header">
+                <div class="uploader-profile">
+                    <div class="uploader-avatar">ว</div>
+                    <div>
+                        <div style="font-weight: 600;">วิทยา จัดเจียม</div>
+                        <div style="font-size: 0.8rem; color: #888;">15 นาที</div>
+                    </div>
+                </div>
+                
+                <div class="stats-group">
+                    <div class="stat-box"><i class="fa-regular fa-eye"></i> 756</div>
+                    <div class="stat-box"><i class="fa-regular fa-heart"></i> 54</div>
+                    <div class="stat-box"><i class="fa-regular fa-bookmark"></i> 6</div>
+                </div>
+            </div>
+
+            <div class="tags-wrapper">
+                <span class="tag-badge">CSS233</span>
+                <span class="sub-tag">เว็บโปร</span>
+                <span class="sub-tag">โปรเจค</span>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 5px;">รายละเอียดไฟล์</h3>
+            <table class="file-details-table">
+                <tr>
+                    <td>ชื่อไฟล์</td>
+                    <td>example.pdf</td>
+                </tr>
+                <tr>
+                    <td>ขนาดไฟล์</td>
+                    <td>2.5 MB</td>
+                </tr>
+                <tr>
+                    <td>วันที่อัปโหลด</td>
+                    <td>15 ม.ค. 2567</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom: 15px; font-size: 1.1rem;">ความคิดเห็น</h3>
+            
+            <div class="comment-input-area">
+                <textarea class="comment-box" rows="2" placeholder="แสดงความคิดเห็น..."></textarea>
+                <div style="text-align: right;">
+                    <button class="btn-orange-sm">ส่งความคิดเห็น</button>
+                </div>
+            </div>
+
+            <div class="comment-list">
+                <div class="comment-item">
+                    <div class="uploader-avatar" style="width: 40px; height: 40px; font-size: 0.9rem; min-width: 40px;">ส</div>
+                    <div class="comment-content">
+                        <h4>สมชาย ใจดี <span class="comment-meta">มากกว่า 1 ปีที่ผ่านมา</span></h4>
+                        <p class="comment-text">ได้เลยครับผม เดี๋ยวตามไปนะน้อง ขอบคุณมากครับ</p>
+                    </div>
+                </div>
+
+                <div class="comment-item">
+                    <div class="uploader-avatar" style="width: 40px; height: 40px; font-size: 0.9rem; min-width: 40px;">ป</div>
+                    <div class="comment-content">
+                        <h4>ปิยะ วิทยากร <span class="comment-meta">มากกว่า 1 ปีที่ผ่านมา</span></h4>
+                        <p class="comment-text">ดีสำหรับมือใหม่มากเลย ไว้ทำมาสอนบ่อยๆ นะครับ</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html> 

@@ -1,0 +1,260 @@
+/* --- 1. Base Variables & Reset (เอามาจาก Style หลัก) --- */
+        :root {
+            --primary: #F5A623;
+            --primary-hover: #e0961f;
+            --text-main: #333;
+            --text-light: #888;
+            --bg-body: #F9F9F9;
+            --border-color: #ddd;
+            --white: #fff;
+            --radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding-bottom: 50px; /* เว้นที่ด้านล่างหน่อย */
+        }
+
+        .container {
+            max-width: 1000px; /* ปรับให้พอดีตากับหน้า View */
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 30px;
+            border: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+
+        /* --- 2. Page Specific Styles (ส่วนหัวข้อและ Viewer) --- */
+        
+        /* Header */
+        .back-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 0 20px 0;
+        }
+        .back-btn {
+            font-size: 1.2rem;
+            color: var(--text-main);
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        .back-btn:hover { background-color: #eee; }
+        
+        .page-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        /* PDF Viewer Mockup */
+        .viewer-container {
+            background-color: #525659;
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .viewer-toolbar {
+            background-color: #323639;
+            color: #f1f1f1;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #444;
+        }
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .toolbar-icon {
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .toolbar-icon:hover { opacity: 1; }
+        
+        .page-counter {
+            background: #000;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .viewer-canvas {
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            min-height: 500px;
+            background-color: #525659;
+            overflow-y: auto;
+        }
+        
+        .document-page {
+            background: white;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            padding: 0; /* รูปเต็มใบ */
+            display: flex;
+            flex-direction: column;
+        }
+        .document-page img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* --- 3. Info Section Styles --- */
+        .uploader-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .uploader-profile {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .uploader-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #555;
+            font-size: 1.1rem;
+        }
+        .stats-group {
+            display: flex;
+            gap: 20px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        .stat-box { display: flex; align-items: center; gap: 6px; }
+
+        /* Tags */
+        .tags-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tag-badge {
+            background: #FFF4E5;
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .sub-tag {
+            border: 1px solid #eee;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        /* Table */
+        .file-details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        .file-details-table td {
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .file-details-table tr:last-child td { border-bottom: none; }
+        .file-details-table td:first-child {
+            color: var(--text-light);
+            width: 150px;
+        }
+        .file-details-table td:last-child {
+            text-align: right;
+            font-weight: 500;
+        }
+
+        /* --- 4. Comments Styles --- */
+        .comment-input-area {
+            margin-bottom: 30px;
+        }
+        .comment-box {
+            width: 100%;
+            max-height: 100px;
+            min-height: 100px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            font-family: 'Prompt', sans-serif;
+            margin-bottom: 10px;
+            resize: vertical;
+            outline: none;
+        }
+        .comment-box:focus { border-color: var(--primary); }
+
+        .btn-orange-sm {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: 'Prompt', sans-serif;
+        }
+        .btn-orange-sm:hover { background: var(--primary-hover); }
+
+        .comment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .comment-item {
+            display: flex;
+            gap: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        .comment-item:last-child { border-bottom: none; padding-bottom: 0; }
+        
+        .comment-content h4 { font-size: 0.95rem; margin-bottom: 4px; }
+        .comment-meta { 
+            font-size: 0.75rem; 
+            color: var(--text-light); 
+            font-weight: normal; 
+            margin-left: 5px;
+        }
+        .comment-text { font-size: 0.9rem; color: #444; line-height: 1.5; }
