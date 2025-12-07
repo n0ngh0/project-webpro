@@ -376,7 +376,7 @@ const switchTab = async (type, btnElement) => {
         } else if (type === 'favorites') {
             endpoint = `${API}/api/notes/${userId}/favorites`;
         }
-
+        
         const response = await fetch(endpoint);
 
         if (!response.ok) throw new Error('Failed to fetch');

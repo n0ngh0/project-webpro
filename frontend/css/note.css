@@ -20,11 +20,11 @@
             font-family: 'Prompt', sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
-            padding-bottom: 50px; /* เว้นที่ด้านล่างหน่อย */
+            padding-bottom: 50px;
         }
 
         .container {
-            max-width: 1000px; /* ปรับให้พอดีตากับหน้า View */
+            max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
         }
