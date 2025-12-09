@@ -7,13 +7,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/note.css">
 </head>
 
 <body>
     <header>    
         <nav>
-            <div class="logo"><h1 onclick="window.location.reload()"><span style="color: #F8AD24;">Note</span>Up</h1></div>
+            <div class="logo"><h1 onclick="window.location.href= `main.html`"><span style="color: #F8AD24;">Note</span>Up</h1></div>
             <div class="search">
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" id="search" placeholder="ค้นหาโน้ต วิชา หรือแท๊ก...">
@@ -85,7 +84,7 @@
     <!--  -->
     <!--  -->
     <!--  -->
-    <div class="container">
+    <div class="note-container">
         
         <div class="back-header">
             <a href="#" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
@@ -118,7 +117,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="note-card">
             <h3 style="margin-bottom: 15px; font-size: 1rem; font-weight: 600;">ผู้แชร์ไฟล์</h3>
             
             <div class="uploader-header">
@@ -162,7 +161,7 @@
             </table>
         </div>
 
-        <div class="card">
+        <div class="note-card">
             <h3 style="margin-bottom: 15px; font-size: 1.1rem;">ความคิดเห็น</h3>
             
             <div class="comment-input-area">
@@ -192,6 +191,6 @@
         </div>
 
     </div>
-
+    <script src="js/app.js"></script>
 </body>
 </html> 
