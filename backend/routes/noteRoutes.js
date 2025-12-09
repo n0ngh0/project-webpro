@@ -4,7 +4,7 @@ const multer = require('multer');
 const fs = require('fs');
 const pdf = require('pdf2pic');
 
-const pool = require('./connection');
+const pool = require('../config/database');
 
 const router = express.Router();
 

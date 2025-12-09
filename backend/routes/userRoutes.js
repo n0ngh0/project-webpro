@@ -2,7 +2,7 @@ const express = require('express');
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const pool = require('./connection');
+const pool = require('../config/database');
 const multer = require('multer');
 const path = require('path');
 
@@ -80,7 +80,7 @@ router.get('/', async (req, res)=> {
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, '../../frontend/img'));
+        cb(null, path.join(__dirname, '../public/img'));
     },
     filename: function (req, file, cb) {
         cb(null, 'profile-' + Date.now() + path.extname(file.originalname));
