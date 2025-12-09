@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const pool = require('../config/database');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
 const JWT_SECRET = 'jwtthesecret'; 
 
@@ -80,7 +81,13 @@ router.get('/', async (req, res)=> {
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, '../public/img'));
+        // store profile images under frontend/img so frontend can access them directly
+        const dest = path.join(__dirname, '..', '..', 'img');
+        // create folder if it doesn't exist
+        if (!fs.existsSync(dest)) {
+            fs.mkdirSync(dest, { recursive: true });
+        }
+        cb(null, dest);
     },
     filename: function (req, file, cb) {
         cb(null, 'profile-' + Date.now() + path.extname(file.originalname));
@@ -117,6 +124,8 @@ router.put('/update/:id', upload.single('profile_img'), async (req, res) => {
 
     if (req.file) {
         updateData.file_img = 'img/' + req.file.filename; 
+    }else {
+        updateData.file_img = '/img/images.png'; 
     }
 
     try {
@@ -125,7 +134,6 @@ router.put('/update/:id', upload.single('profile_img'), async (req, res) => {
         if (results.affectedRows === 0) {
             return res.status(404).json({ message: "ไม่พบผู้ใช้งาน ID " + userId });
         }
-
         res.status(200).json({ message: "อัปเดตข้อมูลสำเร็จ"});
 
     } catch (err) {

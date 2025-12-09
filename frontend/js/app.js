@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(document.getElementById('course-profile-list')) {
         fetchProfileCourses();
         if (plist) {
-            const btn = document.querySelector('.tab-btn'); 
+            const btn = document.querySelector('.tab-item'); 
             switchTab('uploads', btn);
         }
     }
@@ -183,7 +183,7 @@ const UpdateNavbar =  async () => {
                 if(loginBtn) loginBtn.style.display = "none";
                 if(profileIcon) {
                     profileIcon.style.display = "block";
-                    const pSrc = `../`+user.file_img || '../img/images.png';
+                    const pSrc = user.file_img ? ('../' + user.file_img) : '../img/images.png';
                     profileIcon.src = pSrc;
                 }
             }
@@ -218,7 +218,7 @@ const FetchProfileData = async () => {
             const emailEl = document.getElementById('profile-email');
             const joinDateEl = document.getElementById('profile-join-date');
 
-            const profileImgSrc = `../`+user.file_img || '../img/images.png';
+            const profileImgSrc = user.file_img ? ('../' + user.file_img) : '../img/images.png';
             if(imgElement) imgElement.src = profileImgSrc;
             if(usernameEl) usernameEl.textContent = user.nickname + `(${user.username})`;
             if(emailEl) emailEl.textContent = user.email;
@@ -267,10 +267,8 @@ const renderCourse = (coursesData, isProfile = false) => {
         tags = [];
       }
     }
-    // Always point to backend public for thumbnails (consistent across pages)
-    const imgSrc = course.file_img
-        ? (`../backend/public${course.file_img.startsWith('/') ? course.file_img : ('/' + course.file_img)}`)
-        : '../img/images.png';
+    // simple instance-style path: use backend public when course.file_img exists
+    const imgSrc = `/backend/public${(course.file_img)}` || '../img/images.png';
 
     htmlContent += 
     `
@@ -294,9 +292,7 @@ const renderCourse = (coursesData, isProfile = false) => {
             <div class="course-info">
                 <div class="course-profile">
                     ${(() => {
-                        const profileSrc = course.profile
-                            ? (`../backend/public${course.profile.startsWith('/') ? course.profile : ('/' + course.profile)}`)
-                            : '../img/images.png';
+                        const profileSrc = course.profile ? ('../img/' + course.profile.split('/').pop()) : '../img/images.png';
                         return `<img src="${profileSrc}" alt="" class="profile">`;
                     })()}
                     <span>${course.nickname}</span>
@@ -408,133 +404,6 @@ const switchTab = async (type, btnElement) => {
 };
 
 // -----------------------
-// Merged: upload.js
-// -----------------------
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-const form = document.getElementById('upload-form');
-const fileInput = document.getElementById('file-input');
-const msg = document.getElementById('statusMessage');
-
-
-const uploadPlaceholder = document.getElementById('upload-placeholder');
-const previewContainer = document.getElementById('preview-container');
-const previewImg = document.getElementById('preview-img');
-const loadingText = document.getElementById('loading-text');
-
-let coverBlob = null; 
-
-if (fileInput) {
-  fileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-
-      if (!file || file.type !== 'application/pdf') {
-          if (msg) msg.textContent = "กรุณาเลือกไฟล์ PDF";
-          setTimeout(() => {}, 1500);
-          if (msg) msg.textContent = "";
-          return;
-      }
-
-      if (uploadPlaceholder) uploadPlaceholder.style.display = 'none';
-      if (previewContainer) previewContainer.style.display = 'none';
-      if (loadingText) loadingText.style.display = 'block';
-
-      try {
-          const fileURL = URL.createObjectURL(file);
-          const pdf = await pdfjsLib.getDocument(fileURL).promise;
-          const page = await pdf.getPage(1);
-
-          const scale = 1.5;
-          const viewport = page.getViewport({ scale: scale });
-          const canvas = document.createElement('canvas');
-          const context = canvas.getContext('2d');
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
-
-          await page.render({ canvasContext: context, viewport: viewport }).promise;
-
-          canvas.toBlob((blob) => {
-              coverBlob = blob; // ✅ เก็บไฟล์รูปไว้
-              if (previewImg) previewImg.src = URL.createObjectURL(blob);
-              if (loadingText) loadingText.style.display = 'none';
-              if (previewContainer) previewContainer.style.display = 'block';
-          }, 'image/jpeg', 0.9);
-
-      } catch (err) {
-          console.error(err);
-          if (loadingText) loadingText.style.display = 'none';
-          if (uploadPlaceholder) uploadPlaceholder.style.display = 'block';
-          if (msg) {
-              msg.textContent = "เกิดข้อผิดพลาดในการอ่านไฟล์ PDF";
-              msg.style.color = "red";
-          }
-      }
-  });
-}
-
-if (form) {
-  form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      if (!fileInput || fileInput.files.length === 0) {
-          alert("กรุณาเลือกไฟล์ PDF ก่อนกดปุ่มครับ");
-          return;
-      }
-      if (!coverBlob) {
-          alert("กำลังสร้างรูปปก กรุณารอสักครู่...");
-          return;
-      }
-
-      const formData = new FormData(form);
-
-      formData.append('coverImage', coverBlob, 'cover.jpg');
-
-      const user_id = localStorage.getItem('user_id') || 1; 
-      formData.append('uploader_id', user_id);
-
-      try {
-          if (msg) {
-              msg.textContent = "กำลังอัปโหลด...";
-              msg.style.color = "blue";
-          }
-
-          const btn = form.querySelector('button');
-          if (btn) btn.disabled = true;
-
-          const response = await fetch(`${API}/api/notes`, { 
-              method: 'POST',
-              body: formData
-          });
-          
-          if (response.ok) {
-              if (msg) {
-                  msg.textContent = "✅ อัปโหลดสำเร็จ";
-                  msg.style.color = "green";
-              }
-              setTimeout(() => {
-                  window.location.href = 'main.html';
-              }, 1500);
-          } else {
-              if (msg) {
-                  msg.textContent = "❌ ไม่สามารถอัปโหลด: ";
-                  msg.style.color = "red";
-              }
-              if (btn) btn.disabled = false;
-          }
-      } catch (err) {
-          console.error(err);
-          if (msg) {
-              msg.textContent = "Error: เชื่อมต่อ Server ไม่ได้";
-              msg.style.color = "red";
-          }
-          const btn = form.querySelector('button');
-          if (btn) btn.disabled = false;
-      }
-  });
-}
-
-// -----------------------
 // Merged: edit-profile.js
 // -----------------------
 
@@ -542,7 +411,7 @@ const userId = localStorage.getItem('user_id');
 
 const ep_fileInput = document.getElementById('file-input');
 const ep_previewImg = document.getElementById('preview-img');
-const usernameInput = document.getElementById('username');
+const usernameInput = document.getElementById('edit-username');
 const emailInput = document.getElementById('email');
 const isPublicInput = document.getElementById('is-public');
 const showStatsInput = document.getElementById('show-stats');
@@ -550,6 +419,7 @@ const showStatsInput = document.getElementById('show-stats');
 document.addEventListener('DOMContentLoaded', async () => {
     // If profile page elements exist, load profile data
     if (document.getElementById('edit-profile-form')) {
+        let isImageReset = false;
         if (!userId) {
             alert("กรุณาเข้าสู่ระบบก่อนครับ");
             return window.location.href = 'index.html';
@@ -566,9 +436,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (isPublicInput) isPublicInput.checked = (user.is_public == 1);
                 if (showStatsInput) showStatsInput.checked = (user.show_stats == 1);
 
-                const epSrc = user.file_img
-                    ? (`../backend/public${user.file_img.startsWith('/') ? user.file_img : ('/' + user.file_img)}`)
-                    : '../img/images.png';
+                const epSrc = user.file_img ? ('../' + user.file_img) : '../img/images.png';
                 if (ep_previewImg) ep_previewImg.src = epSrc;
             }
         } catch (err) {
@@ -581,11 +449,13 @@ if (ep_fileInput) {
   ep_fileInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
+        isImageReset = false;
           if (file.size > 2 * 1024 * 1024) {
               alert("รูปภาพใหญ่เกินไป! กรุณาใช้รูปขนาดไม่เกิน 2MB");
               ep_fileInput.value = "";
               return;
           }
+          
 
           const reader = new FileReader();
           reader.onload = function(e) {
@@ -599,6 +469,7 @@ if (ep_fileInput) {
 function resetImage() {
     if (ep_fileInput) ep_fileInput.value = ""; 
     if (ep_previewImg) ep_previewImg.src = "../img/images.png";
+    isImageReset = true;
 }
 
 const editForm = document.getElementById('edit-profile-form');
@@ -612,7 +483,9 @@ if (editForm) {
       formData.append('is_public', isPublicInput.checked);
       formData.append('show_stats', showStatsInput.checked);
 
-      if (ep_fileInput && ep_fileInput.files[0]) {
+      if (isImageReset) {
+          formData.append('profile_img', '../img/images.png'); 
+      }else if (ep_fileInput && ep_fileInput.files[0]) {
           formData.append('profile_img', ep_fileInput.files[0]);
       }
 
