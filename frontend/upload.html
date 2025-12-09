@@ -4,9 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NoteUp</title>
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/best.css">
+
 </head>
 <body>
+      <header>    
+        <nav>
+            <div class="logo"><h1 onclick="window.location.reload()"><span style="color: #F8AD24;">Note</span>Up</h1></div>
+            <div class="search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="search" placeholder="ค้นหาโน้ต วิชา หรือแท๊ก...">
+            </div>
+            <div class="right">
+                <button id="login_btn" onclick="openPopup('login-form')">เข้าสู่ระบบ</button>
+                <img id="profile" onclick="window.location.href=`profile.html`">
+            </div>
+        </nav>
+    </header>
+
+
+    <!--  -->
+    <!--  -->
+    <!--  -->
+    <!--  -->
+    <!--  -->
+    <!--  -->
   <main class="page-wrapper">
 
     <div class="container">
@@ -79,7 +102,7 @@
 
 <script src="https://kit.fontawesome.com/97f6fe82ff.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="javascript/upload.js"></script> 
+<script src="javascript/app.js"></script>
 
 </body>
 </html>

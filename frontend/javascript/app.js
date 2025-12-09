@@ -1,6 +1,7 @@
 const API = 'http://localhost:3000'; // ใช้ตัวแปรนี้ตัวเดียวนะครับ
 const loginMessage = document.getElementById('login-message');
 const regMessage = document.getElementById('reg-message');
+const upload = document.getElementById('upload-button');
 
 // --- Utility Functions ---
 const openPopup = (id) => {
@@ -32,6 +33,9 @@ const switchToSignUp = () => {
 document.addEventListener('DOMContentLoaded', () => {
     
     UpdateNavbar();
+    if(!localStorage.getItem('user_id')){
+        upload.style.display = 'none';
+    }
 
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
@@ -390,4 +394,238 @@ const switchTab = async (type, btnElement) => {
         container.innerHTML = '<p style="positon: absolute; top: 50%;text-align:center; color: #888;">ไม่พบข้อมูลรายการนี้</p>';
     }
 };
+
+// -----------------------
+// Merged: upload.js
+// -----------------------
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const form = document.getElementById('upload-form');
+const fileInput = document.getElementById('file-input');
+const msg = document.getElementById('statusMessage');
+
+
+const uploadPlaceholder = document.getElementById('upload-placeholder');
+const previewContainer = document.getElementById('preview-container');
+const previewImg = document.getElementById('preview-img');
+const loadingText = document.getElementById('loading-text');
+
+let coverBlob = null; 
+
+if (fileInput) {
+  fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+
+      if (!file || file.type !== 'application/pdf') {
+          if (msg) msg.textContent = "กรุณาเลือกไฟล์ PDF";
+          setTimeout(() => {}, 1500);
+          if (msg) msg.textContent = "";
+          return;
+      }
+
+      if (uploadPlaceholder) uploadPlaceholder.style.display = 'none';
+      if (previewContainer) previewContainer.style.display = 'none';
+      if (loadingText) loadingText.style.display = 'block';
+
+      try {
+          const fileURL = URL.createObjectURL(file);
+          const pdf = await pdfjsLib.getDocument(fileURL).promise;
+          const page = await pdf.getPage(1);
+
+          const scale = 1.5;
+          const viewport = page.getViewport({ scale: scale });
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+
+          await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+          canvas.toBlob((blob) => {
+              coverBlob = blob; // ✅ เก็บไฟล์รูปไว้
+              if (previewImg) previewImg.src = URL.createObjectURL(blob);
+              if (loadingText) loadingText.style.display = 'none';
+              if (previewContainer) previewContainer.style.display = 'block';
+          }, 'image/jpeg', 0.9);
+
+      } catch (err) {
+          console.error(err);
+          if (loadingText) loadingText.style.display = 'none';
+          if (uploadPlaceholder) uploadPlaceholder.style.display = 'block';
+          if (msg) {
+              msg.textContent = "เกิดข้อผิดพลาดในการอ่านไฟล์ PDF";
+              msg.style.color = "red";
+          }
+      }
+  });
+}
+
+if (form) {
+  form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (!fileInput || fileInput.files.length === 0) {
+          alert("กรุณาเลือกไฟล์ PDF ก่อนกดปุ่มครับ");
+          return;
+      }
+      if (!coverBlob) {
+          alert("กำลังสร้างรูปปก กรุณารอสักครู่...");
+          return;
+      }
+
+      const formData = new FormData(form);
+
+      formData.append('coverImage', coverBlob, 'cover.jpg');
+
+      const user_id = localStorage.getItem('user_id') || 1; 
+      formData.append('uploader_id', user_id);
+
+      try {
+          if (msg) {
+              msg.textContent = "กำลังอัปโหลด...";
+              msg.style.color = "blue";
+          }
+
+          const btn = form.querySelector('button');
+          if (btn) btn.disabled = true;
+
+          const response = await fetch(`${API}/api/notes`, { 
+              method: 'POST',
+              body: formData
+          });
+          
+          if (response.ok) {
+              if (msg) {
+                  msg.textContent = "✅ อัปโหลดสำเร็จ";
+                  msg.style.color = "green";
+              }
+              setTimeout(() => {
+                  window.location.href = 'main.html';
+              }, 1500);
+          } else {
+              const errText = await response.text();
+              if (msg) {
+                  msg.textContent = "❌ ไม่สามารถอัปโหลด: " + errText;
+                  msg.style.color = "red";
+              }
+              if (btn) btn.disabled = false;
+          }
+      } catch (err) {
+          console.error(err);
+          if (msg) {
+              msg.textContent = "Error: เชื่อมต่อ Server ไม่ได้";
+              msg.style.color = "red";
+          }
+          const btn = form.querySelector('button');
+          if (btn) btn.disabled = false;
+      }
+  });
+}
+
+// -----------------------
+// Merged: edit-profile.js
+// -----------------------
+
+const userId = localStorage.getItem('user_id');
+
+const ep_fileInput = document.getElementById('file-input');
+const ep_previewImg = document.getElementById('preview-img');
+const usernameInput = document.getElementById('username');
+const emailInput = document.getElementById('email');
+const isPublicInput = document.getElementById('is-public');
+const showStatsInput = document.getElementById('show-stats');
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // If profile page elements exist, load profile data
+    if (document.getElementById('edit-profile-form')) {
+        if (!userId) {
+            alert("กรุณาเข้าสู่ระบบก่อนครับ");
+            return window.location.href = 'index.html';
+        }
+
+        try {
+            const res = await fetch(`${API}/api/users/profile/${userId}`);
+            if (res.ok) {
+                const data = await res.json();
+                const user = Array.isArray(data) ? data[0] : data;
+
+                if (usernameInput) usernameInput.value = user.nickname;
+                if (emailInput) emailInput.value = user.email;
+                if (isPublicInput) isPublicInput.checked = (user.is_public == 1);
+                if (showStatsInput) showStatsInput.checked = (user.show_stats == 1);
+
+                if (user.file_img) {
+                    if (ep_previewImg) ep_previewImg.src = '../' + user.file_img;
+                } else {
+                    if (ep_previewImg) ep_previewImg.src = '../img/default.png';
+                }
+            }
+        } catch (err) {
+            console.error("Error loading profile:", err);
+        }
+    }
+});
+
+if (ep_fileInput) {
+  ep_fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+          if (file.size > 2 * 1024 * 1024) {
+              alert("รูปภาพใหญ่เกินไป! กรุณาใช้รูปขนาดไม่เกิน 2MB");
+              ep_fileInput.value = "";
+              return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = function(e) {
+              if (ep_previewImg) ep_previewImg.src = e.target.result;
+          }
+          reader.readAsDataURL(file);
+      }
+  });
+}
+
+function resetImage() {
+    if (ep_fileInput) ep_fileInput.value = ""; 
+    if (ep_previewImg) ep_previewImg.src = "./img/images.png";
+}
+
+const editForm = document.getElementById('edit-profile-form');
+if (editForm) {
+  editForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData();
+      formData.append('username', usernameInput.value);
+      formData.append('email', emailInput.value);
+      formData.append('is_public', isPublicInput.checked);
+      formData.append('show_stats', showStatsInput.checked);
+
+      if (ep_fileInput && ep_fileInput.files[0]) {
+          formData.append('profile_img', ep_fileInput.files[0]);
+      }
+
+      try {
+          const res = await fetch(`${API}/api/users/update/${userId}`, {
+              method: 'PUT',
+              body: formData 
+          });
+
+          const result = await res.json();
+
+          if (res.ok) {
+              alert('บันทึกข้อมูลสำเร็จ!');
+              localStorage.setItem('username', usernameInput.value);
+              window.location.href = 'profile.html'; 
+          } else {
+              alert('เกิดข้อผิดพลาด: ' + result.message);
+          }
+
+      } catch (err) {
+          console.error(err);
+          alert('เชื่อมต่อ Server ไม่ได้');
+      }
+  });
+}
 

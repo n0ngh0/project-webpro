@@ -1,139 +1,136 @@
--- *** DDL (Data Definition Language) ***
 
--- 1. ตาราง USERS (ผู้ใช้งาน) - ปรับปรุง ENUM role เป็น ('user', 'admin')
-CREATE TABLE users (
-    user_id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'รหัสผู้ใช้งาน',
-    username VARCHAR(100) NOT NULL UNIQUE COMMENT 'ชื่อผู้ใช้งาน (ล็อกอิน)',
-    email VARCHAR(150) NOT NULL UNIQUE COMMENT 'อีเมล',
-    password_hash VARCHAR(255) NOT NULL COMMENT 'รหัสผ่านที่ถูกเข้ารหัส',
-    role ENUM('user', 'admin') NOT NULL COMMENT 'สิทธิ์การใช้งาน', -- แก้ไขจากเดิม
-    faculty VARCHAR(100) COMMENT 'คณะที่สังกัด',
-    major VARCHAR(100) COMMENT 'สาขา',
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'วันที่สร้างบัญชี'
-) COMMENT 'ตารางข้อมูลผู้ใช้งาน';
+CREATE SCHEMA IF NOT EXISTS webpro;
+USE webpro;
 
--- 2. ตาราง SUBJECTS (วิชา)
-CREATE TABLE subjects (
-    subject_id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'รหัสวิชา',
-    subject_code VARCHAR(50) NOT NULL UNIQUE COMMENT 'รหัสวิชา เช่น CS101',
-    subject_name VARCHAR(200) NOT NULL COMMENT 'ชื่อวิชา',
-    faculty VARCHAR(100) COMMENT 'คณะที่สังกัด'
-) COMMENT 'ตารางข้อมูลวิชาที่ใช้จัดหมวดหมู่โน้ต';
+-- 1. สร้างตาราง users
+CREATE TABLE IF NOT EXISTS users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    nickname VARCHAR(255),
+    email VARCHAR(150) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL, -- ในการใช้งานจริงควรเก็บเป็น Hashed Password
+    role ENUM('user', 'admin') DEFAULT 'user',
+    faculty VARCHAR(100),
+    major VARCHAR(100),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    file_img VARCHAR(255),
+    is_public TINYINT DEFAULT 1,
+    show_stats TINYINT DEFAULT 1
+);
 
--- 3. ตาราง NOTES (เอกสาร/โน้ต)
-CREATE TABLE notes (
-    note_id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'รหัสโน้ต',
-    title VARCHAR(200) NOT NULL COMMENT 'ชื่อเรื่องโน้ต',
-    description TEXT COMMENT 'รายละเอียดโน้ต',
-    file_url VARCHAR(255) COMMENT 'Path ของไฟล์ PDF/Doc',
-    uploader_id INT NOT NULL COMMENT 'ผู้ที่อัปโหลดโน้ต',
-    subject_id INT NOT NULL COMMENT 'วิชาที่สังกัด',
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'วันที่อัปโหลด',
-    views INT NOT NULL DEFAULT 0 COMMENT 'จำนวนการเข้าชม',
-    
-    FOREIGN KEY (uploader_id) REFERENCES users(user_id),
-    FOREIGN KEY (subject_id) REFERENCES subjects(subject_id)
-) COMMENT 'ตารางข้อมูลโน้ต/เอกสาร';
+-- 2. สร้างตาราง subjects
+CREATE TABLE IF NOT EXISTS subjects (
+    subject_id INT AUTO_INCREMENT PRIMARY KEY,
+    subject_code VARCHAR(50) NOT NULL,
+    subject_name VARCHAR(200) NOT NULL,
+    faculty VARCHAR(100)
+);
 
--- 4. ตาราง TAGS (แท็ก)
-CREATE TABLE tags (
-    tag_id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'รหัสแท็ก',
-    tag_name VARCHAR(100) NOT NULL UNIQUE COMMENT 'ชื่อแท็ก'
-) COMMENT 'ตารางข้อมูลแท็ก';
+-- 3. สร้างตาราง tags
+CREATE TABLE IF NOT EXISTS tags (
+    tag_id INT AUTO_INCREMENT PRIMARY KEY,
+    tag_name VARCHAR(100) NOT NULL UNIQUE
+);
 
--- 5. ตาราง NOTE_TAGS (ความสัมพันธ์ระหว่างโน้ตและแท็ก)
-CREATE TABLE note_tags (
-    note_id INT NOT NULL COMMENT 'อ้างอิงโน้ต',
-    tag_id INT NOT NULL COMMENT 'อ้างอิงแท็ก',
-    
+-- 4. สร้างตาราง notes (เชื่อมกับ users และ subjects)
+CREATE TABLE IF NOT EXISTS notes (
+    note_id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    description TEXT,
+    file_url VARCHAR(255) NOT NULL,
+    uploader_id INT NOT NULL,
+    subject_id INT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    views INT DEFAULT 0,
+    thumbnail_url VARCHAR(255),
+    FOREIGN KEY (uploader_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (subject_id) REFERENCES subjects(subject_id) ON DELETE CASCADE
+);
+
+-- 5. สร้างตาราง note_tags (Many-to-Many)
+CREATE TABLE IF NOT EXISTS note_tags (
+    note_id INT,
+    tag_id INT,
     PRIMARY KEY (note_id, tag_id),
     FOREIGN KEY (note_id) REFERENCES notes(note_id) ON DELETE CASCADE,
     FOREIGN KEY (tag_id) REFERENCES tags(tag_id) ON DELETE CASCADE
-) COMMENT 'ตารางเชื่อมความสัมพันธ์ Many-to-Many ระหว่าง notes และ tags';
+);
 
--- 6. ตาราง LIKE (การกดถูกใจ)
-CREATE TABLE `like` (
-    note_id INT NOT NULL COMMENT 'อ้างอิงโน้ต',
-    user_id INT NOT NULL COMMENT 'ผู้ใช้ที่กดถูกใจ',
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'เวลาที่กดถูกใจ',
-    
+-- 6. สร้างตาราง comments
+CREATE TABLE IF NOT EXISTS comments (
+    comment_id INT AUTO_INCREMENT PRIMARY KEY,
+    note_id INT NOT NULL,
+    user_id INT NOT NULL,
+    content TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (note_id) REFERENCES notes(note_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- 7. สร้างตาราง likes
+CREATE TABLE IF NOT EXISTS likes (
+    note_id INT,
+    user_id INT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (note_id, user_id),
     FOREIGN KEY (note_id) REFERENCES notes(note_id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-) COMMENT 'ตารางบันทึกการกดถูกใจ';
+);
 
--- 7. ตาราง COMMENTS (ความคิดเห็น)
-CREATE TABLE comments (
-    comment_id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'รหัสคอมเมนต์',
-    note_id INT NOT NULL COMMENT 'โน้ตที่ถูกคอมเมนต์',
-    user_id INT NOT NULL COMMENT 'ผู้ที่คอมเมนต์',
-    content TEXT NOT NULL COMMENT 'ข้อความคอมเมนต์',
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'เวลาที่โพสต์',
-    
-    FOREIGN KEY (note_id) REFERENCES notes(note_id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-) COMMENT 'ตารางบันทึกความคิดเห็น';
+-- 8. สร้างตาราง favorites
+CREATE TABLE IF NOT EXISTS favorites (
+    user_id INT,
+    note_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, note_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (note_id) REFERENCES notes(note_id) ON DELETE CASCADE
+);
 
+-- =============================================
+-- INSERT MOCK DATA (ข้อมูลตัวอย่าง)
+-- =============================================
 
--- *** DML (Data Manipulation Language) - ข้อมูลตัวอย่าง ***
+-- เพิ่มข้อมูล Users
+INSERT INTO users (username, nickname, email, password, role, faculty, major, file_img) VALUES
+('admin_guy', 'Admin A', 'admin@example.com', 'hashed_pass_123', 'admin', 'Engineering', 'Computer Engineering', 'avatar1.png'),
+('student_b', 'Boy', 'boy@example.com', 'pass1234', 'user', 'Science', 'CS', 'avatar2.png'),
+('student_c', 'Cat', 'cat@example.com', 'pass5678', 'user', 'Engineering', 'Software', 'avatar3.png');
 
--- 1. INSERT INTO users
--- แก้ไข role DML ให้สอดคล้องกับ DDL ใหม่ (admin/user)
-INSERT INTO users (username, email, password_hash, role, faculty, major) VALUES 
-('admin_user', 'admin@example.com', 'hashed_admin_password_123', 'admin', 'เทคโนโลยีสารสนเทศ', 'วิศวกรรมซอฟต์แวร์'),
-('junior_dev', 'junior@university.com', 'hashed_junior_password_456', 'user', 'วิทยาศาสตร์', 'คณิตศาสตร์'), -- แก้ไข role เป็น 'user'
-('senior_guru', 'senior@university.com', 'hashed_senior_password_789', 'user', 'วิศวกรรมศาสตร์', 'ไฟฟ้า');  -- แก้ไข role เป็น 'user'
+-- เพิ่มข้อมูล Subjects
+INSERT INTO subjects (subject_code, subject_name, faculty) VALUES
+('CS101', 'Intro to Computer Science', 'Science'),
+('ENG202', 'Database Systems', 'Engineering'),
+('GEN111', 'English for Communication', 'Liberal Arts');
 
--- 2. INSERT INTO subjects
-INSERT INTO subjects (subject_code, subject_name, faculty) VALUES 
-('CS101', 'การเขียนโปรแกรมเบื้องต้น', 'เทคโนโลยีสารสนเทศ'),
-('MA205', 'แคลคูลัส 2', 'วิทยาศาสตร์'),
-('EE310', 'วงจรไฟฟ้าขั้นสูง', 'วิศวกรรมศาสตร์');
+-- เพิ่มข้อมูล Tags
+INSERT INTO tags (tag_name) VALUES
+('Lecture Note'), ('Exam Prep'), ('Summary'), ('Assignment'), ('Slide');
 
--- 3. INSERT INTO notes (อ้างอิง user_id 1, 2, 3 และ subject_id 1, 2, 3)
-INSERT INTO notes (title, description, file_url, uploader_id, subject_id, views) VALUES 
-('สรุปพื้นฐานภาษา Python', 'โน้ตสำหรับนักศึกษาปี 1 เน้นการทำความเข้าใจตัวแปรและลูป', 'https://storage.com/files/note_python.pdf', 1, 1, 150),
-('สูตรอินทิเกรตที่ควรรู้', 'รวมสูตรและเทคนิคการแก้โจทย์แคลคูลัส', 'https://storage.com/files/note_calculus.doc', 2, 2, 85),
-('คู่มือการออกแบบวงจรไฟฟ้า', 'เอกสารประกอบการสอนวิชา EE310', 'https://storage.com/files/note_ee310.pdf', 3, 3, 210);
+-- เพิ่มข้อมูล Notes
+INSERT INTO notes (title, description, file_url, uploader_id, subject_id, views, thumbnail_url) VALUES
+('Database Chapter 1-5', 'สรุปบทเรียน Database ก่อนสอบ Midterm ครับ', 'files/db_chap1_5.pdf', 1, 2, 150, 'thumb_db.jpg'),
+('CS101 Python Basics', 'โค้ดตัวอย่าง Python พื้นฐาน', 'files/python_basics.zip', 2, 1, 340, 'thumb_py.jpg'),
+('English Vocab List', 'รวมคำศัพท์ที่ออกสอบบ่อยๆ', 'files/vocab.pdf', 3, 3, 89, 'thumb_eng.jpg');
 
--- 4. INSERT INTO tags
-INSERT INTO tags (tag_name) VALUES 
-('Programming'),
-('Math'),
-('Engineering');
+-- เพิ่มข้อมูล Note_Tags (เชื่อม Note กับ Tag)
+INSERT INTO note_tags (note_id, tag_id) VALUES
+(1, 1), (1, 3), -- Note 1 คือ Lecture Note และ Summary
+(2, 4),         -- Note 2 คือ Assignment
+(3, 2), (3, 3); -- Note 3 คือ Exam Prep และ Summary
 
--- 5. INSERT INTO note_tags
-INSERT INTO note_tags (note_id, tag_id) VALUES 
-(1, 1), -- Note 1 -> Programming
-(2, 2), -- Note 2 -> Math
-(3, 3), -- Note 3 -> Engineering
-(1, 3); -- Note 1 -> Engineering
+-- เพิ่มข้อมูล Comments
+INSERT INTO comments (note_id, user_id, content) VALUES
+(1, 2, 'ขอบคุณครับ สรุปดีมากเลย'),
+(1, 3, 'ละเอียดมาก อ่านเข้าใจง่าย'),
+(2, 1, 'Code clean มากครับ');
 
--- 6. INSERT INTO `like`
-INSERT INTO `like` (note_id, user_id) VALUES 
-(1, 1), -- User 1 Likes Note 1
-(1, 2), -- User 2 Likes Note 1
-(2, 1); -- User 1 Likes Note 2
+-- เพิ่มข้อมูล Likes
+INSERT INTO likes (note_id, user_id) VALUES
+(1, 2), (1, 3), -- User 2 และ 3 กดไลค์ Note 1
+(2, 1);
 
--- 7. INSERT INTO comments
-INSERT INTO comments (note_id, user_id, content) VALUES 
-(1, 2, 'สรุปได้กระชับและเข้าใจง่ายมากครับ'),
-(1, 3, 'เยี่ยมเลยครับ! ขอบคุณที่แบ่งปัน');
-
--- *** QUERY สำหรับตรวจสอบข้อมูล ***
-SELECT * FROM users;
-SELECT * FROM subjects;
-SELECT * FROM notes;
-SELECT * FROM tags;
-SELECT * FROM note_tags;
-SELECT * FROM `like`;
-SELECT * FROM comments;
-
-
-SELECT * FROM notes n 
-LEFT JOIN comments c ON n.note_id = c.note_id
-LEFT JOIN users u ON u.user_id = n.uploader_id
-JOIN note_tags nt ON nt.note_id = n.note_id
-JOIN tags t ON t.tag_id = nt.tag_id;
-
-SELECT * FROM notes
+-- เพิ่มข้อมูล Favorites
+INSERT INTO favorites (user_id, note_id) VALUES
+(2, 1), -- User 2 เก็บ Note 1 เข้ารายการโปรด
+(3, 2);
