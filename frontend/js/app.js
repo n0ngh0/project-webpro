@@ -72,6 +72,12 @@ document.addEventListener('DOMContentLoaded', () => {
             switchTab('uploads', btn);
         }
     }
+    if(window.location.pathname.endsWith('view-note.html')) {
+        loadViewNoteData();
+    }
+    if(document.getElementById('comments-container')) {
+        loadComments();
+    }
 });
 
 
@@ -512,3 +518,119 @@ if (editForm) {
   });
 }
 
+const read = (noteId) => {
+    window.location.href = `view-note.html?id=${noteId}`;
+};
+
+const loadViewNoteData = async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const noteId = urlParams.get('id');
+
+    if (!noteId) {
+        alert("ไม่พบรหัสโน้ต");
+        window.location.href = "main.html";
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API}/api/notes/detail/${noteId}`);
+        if (!response.ok) throw new Error("Network response was not ok");
+        
+        const note = await response.json();
+        document.getElementById('note-title').textContent = note.title;
+        document.getElementById('subject-code').textContent = note.subject_code;
+        document.getElementById('subject-name').textContent = note.subject_name;
+        document.getElementById('note-desc').textContent = note.description || "ไม่มีคำอธิบาย";
+        document.getElementById('uploader-name').textContent = note.nickname;
+        document.getElementById('note-views').textContent = note.views;
+
+        const date = new Date(note.created_at);
+        document.getElementById('date').textContent = date.toLocaleDateString('th-TH');
+        const uploaderImg = `../${(note.uploader_img)}`  || '../img/images.png';
+        document.getElementById('file_name').textContent= uploaderImg.replace('../img/', '');;
+        document.getElementById('uploader-img').src = uploaderImg;
+        const pdfUrl = `${API}${note.file_url}`; 
+        document.getElementById('pdf-viewer').src = `${pdfUrl}`;
+
+    } catch (err) {
+        console.error("Error loading note:", err);
+        alert("เกิดข้อผิดพลาดในการโหลดข้อมูล");
+    }
+};
+
+
+loadComments = async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const noteId = urlParams.get('id');
+    const container = document.getElementById('comments-container');
+
+    try {
+        const response = await fetch(`${API}/api/notes/comments/${noteId}`);
+        const comments = await response.json();
+
+        container.innerHTML = '';
+
+        if (comments.length === 0) {
+            container.innerHTML = '<p style="color:gray">ยังไม่มีความคิดเห็น เป็นคนแรกที่เริ่มเลย!</p>';
+            return;
+        }
+        comments.forEach(c => {
+            const dateStr = new Date(c.created_at).toLocaleString('th-TH');
+            const html = `
+                <div style="display: flex; gap: 15px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                    <img src="/${c.file_img}" 
+                         style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 1px solid #ccc;"> <div>
+                        <div style="font-weight: bold; font-size: 1.1em;">
+                            ${c.nickname} 
+                            <span style="font-size: 0.8em; color: gray; font-weight: normal; margin-left: 10px;">
+                                ${dateStr}
+                            </span>
+                        </div>
+                        <div style="margin-top: 5px;">${c.content}</div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += html;
+        });
+
+    } catch (error) {
+        console.error("Load comments failed:", error);
+        container.innerHTML = '<p style="color:red">โหลดคอมเมนต์ไม่สำเร็จ</p>';
+    }
+}
+
+postComment = async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const noteId = urlParams.get('id');
+    const content = document.getElementById('txt-comment').value;
+
+    const userId = localStorage.getItem('user_id');
+    if (!document.getElementById('comments-container')) return;
+    if (!content.trim()) {
+        alert("กรุณาพิมพ์ข้อความ");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API}/api/notes/comments`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                note_id: noteId,
+                user_id: userId,
+                content: content
+            })
+        });
+
+        if (response.ok) {
+            document.getElementById('txt-comment').value = '';
+            loadComments();
+        } else {
+            alert("ส่งคอมเมนต์ไม่สำเร็จ");
+        }
+
+    } catch (error) {
+        console.error("Post comment failed:", error);
+        alert("เกิดข้อผิดพลาด");
+    }
+}

@@ -348,4 +348,53 @@ router.get('/detail/:id', async (req, res) => {
     }
 });
 
+// ---------------------------------------------------
+// 1. GET: ดึงคอมเมนต์ทั้งหมดของ Note ID นั้นๆ
+// ---------------------------------------------------
+router.get('/comments/:noteId', async (req, res) => {
+    try {
+        const { noteId } = req.params;
+
+        const sql = `
+            SELECT 
+                c.comment_id, c.content, c.created_at,
+                u.user_id, u.nickname, u.file_img
+            FROM comments c
+            JOIN users u ON c.user_id = u.user_id
+            WHERE c.note_id = ?
+            ORDER BY c.created_at DESC
+        `;
+        
+        const [rows] = await pool.query(sql, [noteId]);
+        
+
+        res.json(rows);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Error fetching comments" });
+    }
+});
+
+// ---------------------------------------------------
+// 2. POST: เพิ่มคอมเมนต์ใหม่
+// ---------------------------------------------------
+router.post('/comments', async (req, res) => {
+    try {
+        const { note_id, user_id, content } = req.body;
+        if (!content || !note_id || !user_id) {
+            return res.status(400).json({ message: "ข้อมูลไม่ครบถ้วน" });
+        }
+
+        const sql = `INSERT INTO comments (note_id, user_id, content) VALUES (?, ?, ?)`;
+        await pool.query(sql, [note_id, user_id, content]);
+
+        res.json({ message: "เพิ่มคอมเมนต์สำเร็จ" });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Error adding comment" });
+    }
+});
+
 module.exports = router;
