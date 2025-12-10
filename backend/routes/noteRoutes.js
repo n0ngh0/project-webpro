@@ -310,4 +310,42 @@ router.post('/', Upload.fields([
     }
 });
 
+
+
+// 
+// 
+// 
+// 
+// 
+
+router.get('/detail/:id', async (req, res) => {
+    try {
+        const noteId = req.params.id;
+
+        // 1. อัปเดตยอดวิวเพิ่มขึ้น 1 ครั้ง
+        await pool.query('UPDATE notes SET views = views + 1 WHERE note_id = ?', [noteId]);
+
+        // 2. ดึงข้อมูลโน้ต + ข้อมูลคนอัปโหลด + วิชา
+        const [rows] = await pool.query(`
+            SELECT 
+                n.note_id, n.title, n.description, n.file_url, n.created_at, n.views,
+                u.nickname, u.file_img AS uploader_img,
+                s.subject_code, s.subject_name
+            FROM notes n
+            JOIN users u ON n.uploader_id = u.user_id
+            JOIN subjects s ON n.subject_id = s.subject_id
+            WHERE n.note_id = ?
+        `, [noteId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ message: "ไม่พบโน้ตนี้" });
+        }
+
+        res.json(rows[0]);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
+    }
+});
+
 module.exports = router;
