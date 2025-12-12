@@ -1406,7 +1406,9 @@ h3 {
     cursor: pointer;
     transition: 0.2s;
 }
-
+.back-btn {
+    margin-bottom: 8px;
+}
 .upload-container .btn-secondary:hover {
     background: #ddd;
 }

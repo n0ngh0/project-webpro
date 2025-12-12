@@ -112,13 +112,11 @@ const upload = multer({
 router.put('/update/:id', upload.single('profile_img'), async (req, res) => {
     const userId = req.params.id;
 
-    const { username, email, is_public, show_stats } = req.body;
+    const { username, email } = req.body;
 
     let updateData = {
         nickname: username,
-        email: email,
-        is_public: (is_public === 'true' || is_public === 'on') ? 1 : 0,
-        show_stats: (show_stats === 'true' || show_stats === 'on') ? 1 : 0
+        email: email
     };
 
 

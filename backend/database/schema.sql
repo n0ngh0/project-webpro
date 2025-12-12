@@ -12,9 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     faculty VARCHAR(100),
     major VARCHAR(100),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    file_img VARCHAR(255),
-    is_public TINYINT DEFAULT 1,
-    show_stats TINYINT DEFAULT 1
+    file_img VARCHAR(255)
 );
 
 -- 2. สร้างตาราง subjects

@@ -2,6 +2,7 @@ const API = 'http://localhost:3000'; // ใช้ตัวแปรนี้ต�
 const loginMessage = document.getElementById('login-message');
 const regMessage = document.getElementById('reg-message');
 const upload = document.getElementById('upload-button');
+let isImageReset = false;
 
 // --- Utility Functions ---
 const openPopup = (id) => {
@@ -443,13 +444,10 @@ const ep_fileInput = document.getElementById('file-input');
 const ep_previewImg = document.getElementById('preview-img');
 const usernameInput = document.getElementById('edit-username');
 const emailInput = document.getElementById('email');
-const isPublicInput = document.getElementById('is-public');
-const showStatsInput = document.getElementById('show-stats');
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // If profile page elements exist, load profile data
     if (document.getElementById('edit-profile-form')) {
-        let isImageReset = false;
+        isImageReset = false;
         if (!userId) {
             alert("กรุณาเข้าสู่ระบบก่อนครับ");
             return window.location.href = 'index.html';
@@ -463,8 +461,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (usernameInput) usernameInput.value = user.nickname;
                 if (emailInput) emailInput.value = user.email;
-                if (isPublicInput) isPublicInput.checked = (user.is_public == 1);
-                if (showStatsInput) showStatsInput.checked = (user.show_stats == 1);
 
                 const epSrc = user.file_img ? ('../' + user.file_img) : '../img/images.png';
                 if (ep_previewImg) ep_previewImg.src = epSrc;
@@ -508,10 +504,8 @@ if (editForm) {
       e.preventDefault();
 
       const formData = new FormData();
-      formData.append('username', usernameInput.value);
-      formData.append('email', emailInput.value);
-      formData.append('is_public', isPublicInput.checked);
-      formData.append('show_stats', showStatsInput.checked);
+    formData.append('username', usernameInput.value);
+    formData.append('email', emailInput.value);
 
       if (isImageReset) {
           formData.append('profile_img', '../img/images.png'); 
