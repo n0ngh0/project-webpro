@@ -589,7 +589,7 @@ const loadViewNoteData = async () => {
         document.getElementById('file_name').textContent= uploaderImg.replace('../img/', '');;
         document.getElementById('uploader-img').src = uploaderImg;
         const pdfUrl = `${API}${note.file_url}`; 
-        document.getElementById('pdf-viewer').src = `${pdfUrl}`;
+        document.getElementById('pdf-viewer').src = `${pdfUrl}#view=FitH`;
 
     } catch (err) {
         console.error("Error loading note:", err);

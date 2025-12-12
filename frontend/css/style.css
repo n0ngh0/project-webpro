@@ -225,7 +225,6 @@ h3 {
     flex-direction: column;
 }
 .course-grid {
-    padding: 10px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1.5rem;
@@ -613,6 +612,10 @@ h3 {
     margin: 30px auto;
 }
 
+.fa-heart{
+    margin-right: 5px;
+}
+
 .profile-container .profile-form-group {
     margin-bottom: 25px;
 }
@@ -956,7 +959,7 @@ h3 {
 
 .note-container {
     font-family: 'Prompt', sans-serif;
-    background-color: var(--bg-body);
+    background-color: transparent;
     color: var(--text-main);
     padding-bottom: 50px;
 }
@@ -1004,6 +1007,12 @@ h3 {
     font-size: 1.3rem;
     font-weight: 600;
 }
+
+.document-page iframe#pdf-viewer{
+    width: 1000px;
+    height: 100%;
+}
+
 
 .note-container .viewer-container {
     background-color: #525659;
@@ -1065,6 +1074,9 @@ h3 {
     display: flex;
     flex-direction: column;
 }
+    .document-page{
+        height: 800px;
+    }
 
 .note-container .document-page img {
     width: 100%;
@@ -1164,7 +1176,7 @@ h3 {
     font-weight: 500;
 }
 
-.note-container .comment-input-area {
+.comment-input-area {
     margin-bottom: 30px;
 }
 
