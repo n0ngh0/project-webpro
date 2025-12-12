@@ -62,6 +62,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('profile-username')) {
         FetchProfileData();
     }
+    const searchInput = document.getElementById('search');
+    if (searchInput) {
+        searchInput.addEventListener('change', (e) => {
+            const term = e.target.value.trim();
+            fetchCourses(term);
+        });
+    }
     if(document.getElementById('course-list')) {
         fetchCourses();
     }
@@ -77,6 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if(document.getElementById('comments-container')) {
         loadComments();
+    }
+    if(document.getElementById('subject-list')) {
+        loadSubjectsDatalist();
     }
 });
 
@@ -184,7 +194,7 @@ const UpdateNavbar =  async () => {
 
                 if(response.ok) {
                 const data = await response.json();
-                const user = data[0];
+                const user = data;
 
                 if(loginBtn) loginBtn.style.display = "none";
                 if(profileIcon) {
@@ -217,16 +227,18 @@ const FetchProfileData = async () => {
         
         if (response.ok) {
             const data = await response.json();
-            const user = data[0];
+            const user = data;
             
             const imgElement = document.getElementById('profile-img');
             const usernameEl = document.getElementById('profile-username');
+            const nickname = document.getElementById('nametag');
             const emailEl = document.getElementById('profile-email');
             const joinDateEl = document.getElementById('profile-join-date');
 
             const profileImgSrc = user.file_img ? ('../' + user.file_img) : '../img/images.png';
             if(imgElement) imgElement.src = profileImgSrc;
-            if(usernameEl) usernameEl.textContent = user.nickname + `(${user.username})`;
+            if(usernameEl) usernameEl.textContent = user.nickname;
+            if(nickname) nickname.textContent =`@${user.username}`;
             if(emailEl) emailEl.textContent = user.email;
             
             if(joinDateEl) {
@@ -238,6 +250,8 @@ const FetchProfileData = async () => {
                 });
                 joinDateEl.textContent = `เข้าร่วมเมื่อ ${thaiDate}`;
             }
+            document.getElementById('stat-total-notes').innerText = user.stats.total_notes;
+            document.getElementById('stat-total-likes').innerText = user.stats.total_likes;
 
         } else {
             console.error("โหลดข้อมูลไม่สำเร็จ");
@@ -263,48 +277,45 @@ const renderCourse = (coursesData, isProfile = false) => {
   let htmlContent = "";
   coursesData.forEach((course) => {
     let tags = course.tags;
-    if (!tags) {
-      tags = [];
-    }
+    if (!tags) tags = [];
     if (!Array.isArray(tags)) {
-      try {
-        tags = JSON.parse(tags);
-      } catch {
-        tags = [];
-      }
+      try { tags = JSON.parse(tags); } catch { tags = []; }
     }
-    // simple instance-style path: use backend public when course.file_img exists
-    const imgSrc = `/backend/public${(course.file_img)}` || '../img/images.png';
 
-    htmlContent += 
-    `
+    const imgSrc = `./../backend/public/${(course.file_img)}`;
+    const profileSrc = course.profile ? ('../img/' + course.profile.split('/').pop()) : '../img/images.png';;
+    const heartClass = course.is_liked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+    const heartColor = course.is_liked ? 'red' : 'gray';
+    // ---------------------------------------------
+    htmlContent += `
     <div class="course-card">
         <div class="course-image">
             <img src="${imgSrc}" alt="${course.note_title}">
         </div>
 
         <div class="course-body">
-            <p class="course-code">${course.note_code}</p>
+            <p class="course-code">${course.subject_name}</p>
             <h3 class="course-title">${course.note_title}</h3>
 
             <div class="course-tags">
-                ${tags.slice(0, 4)
-                      .map(tag => `<span class="course-tag">${tag}</span>`)
-                      .join("")}
+                ${tags.slice(0, 4).map(tag => `<span class="course-tag">${tag}</span>`).join("")}
             </div>
 
             <button class="course-btn" onclick="read(${course.id})">ชม</button>
 
             <div class="course-info">
                 <div class="course-profile">
-                    ${(() => {
-                        const profileSrc = course.profile ? ('../img/' + course.profile.split('/').pop()) : '../img/images.png';
-                        return `<img src="${profileSrc}" alt="" class="profile">`;
-                    })()}
+                    <img src="${profileSrc}" alt="" class="profile">
                     <span>${course.nickname}</span>
                 </div>
 
                 <div class="course-stats">
+                    
+                    <div class="stat-item">
+                         <i class="${heartClass}" style="color: ${heartColor};"></i>
+                         <span>${course.total_likes || 0}</span>
+                    </div>
+
                     <div class="stat-item">
                         <svg class="stat-icon" viewBox="0 0 24 24">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -321,37 +332,46 @@ const renderCourse = (coursesData, isProfile = false) => {
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
     `;
   });
 
-    if(list) list.innerHTML = htmlContent;
-    else plist.innerHTML = htmlContent;
+  if(list) list.innerHTML = htmlContent;
+  else if (plist) plist.innerHTML = htmlContent;
 };
 
+const fetchCourses = async (searchTerm = '') => {
+    const userId = localStorage.getItem('user_id');
+    const params = new URLSearchParams();
 
-const fetchCourses = async () => {
-  try {
-    const response = await fetch(`${API}/api/notes`);
+    if (userId) params.set('userId', userId);
+    if (searchTerm) params.set('search', searchTerm);
 
-    if (!response.ok) {
-      throw new Error('ไม่สามารถดึงข้อมูลได้');
+    const queryString = params.toString();
+    const url = queryString ? `${API}/api/notes?${queryString}` : `${API}/api/notes`;
+
+    if (list) list.innerHTML = '<p style="text-align:center; padding: 16px;">กำลังโหลด...</p>';
+
+    try {
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error('ไม่สามารถดึงข้อมูลได้');
+        }
+
+        const coursesData = await response.json();
+        renderCourse(coursesData);
+
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาด:', error);
+        if (list) list.innerHTML = '<p>เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
     }
-
-    const coursesData = await response.json();
-    renderCourse(coursesData);
-
-  } catch (error) {
-    console.error('เกิดข้อผิดพลาด:', error);
-    list.innerHTML = '<p>เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
-  }
 };
 const fetchProfileCourses = async () => {
-    const id = localStorage.getItem('user_id');  
+    const userId = localStorage.getItem('user_id');  
     try {
-    const response = await fetch(`${API}/api/notes/${id}`);
+    const response = await fetch(`${API}/api/notes/user/${userId}?userId=${userId}`);
 
     if (!response.ok) {
       throw new Error('ไม่สามารถดึงข้อมูลได้');
@@ -388,11 +408,14 @@ const switchTab = async (type, btnElement) => {
         let endpoint = '';
         
         if (type === 'uploads') {
-            endpoint = `${API}/api/notes/${userId}`;
+            // ดึงโน้ตที่ user คนนี้เป็นคนอัปโหลด
+            endpoint = `${API}/api/notes/user/${userId}?userId=${userId}`;
         } else if (type === 'likes') {
-            endpoint = `${API}/api/notes/${userId}/likes`;
+            // ดึงโน้ตที่ user คนนี้กดไลก์ไว้
+            endpoint = `${API}/api/notes/user/${userId}/likes?userId=${userId}`;
         } else if (type === 'favorites') {
-            endpoint = `${API}/api/notes/${userId}/favorites`;
+            // ดึงโน้ตที่ user คนนี้กด favorites ไว้
+            endpoint = `${API}/api/notes/user/${userId}/favorites?userId=${userId}`;
         }
         
         const response = await fetch(endpoint);
@@ -519,10 +542,15 @@ if (editForm) {
 }
 
 const read = (noteId) => {
-    window.location.href = `view-note.html?id=${noteId}`;
+    if(localStorage.getItem('user_id')){
+        window.location.href = `view-note.html?id=${noteId}`;
+    }else {
+        openPopup('login-form');
+    }
 };
 
 const loadViewNoteData = async () => {
+    const currentUserId = localStorage.getItem('user_id');
     const urlParams = new URLSearchParams(window.location.search);
     const noteId = urlParams.get('id');
 
@@ -533,16 +561,26 @@ const loadViewNoteData = async () => {
     }
 
     try {
-        const response = await fetch(`${API}/api/notes/detail/${noteId}`);
+        const response = await fetch(`${API}/api/notes/detail/${noteId}?userId=${currentUserId}`);
         if (!response.ok) throw new Error("Network response was not ok");
         
         const note = await response.json();
         document.getElementById('note-title').textContent = note.title;
-        document.getElementById('subject-code').textContent = note.subject_code;
         document.getElementById('subject-name').textContent = note.subject_name;
         document.getElementById('note-desc').textContent = note.description || "ไม่มีคำอธิบาย";
         document.getElementById('uploader-name').textContent = note.nickname;
         document.getElementById('note-views').textContent = note.views;
+
+        document.getElementById('like-count').textContent = note.total_likes;
+        document.getElementById('save-count').textContent = note.total_saves;
+
+        const btnDelete = document.getElementById('btn-delete');
+        if (btnDelete && currentUserId && String(currentUserId) === String(note.uploader_id)) {
+        btnDelete.style.display = 'inline-block';
+        }
+        
+        updateIconState('like', note.is_liked);
+        updateIconState('save', note.is_saved);
 
         const date = new Date(note.created_at);
         document.getElementById('date').textContent = date.toLocaleDateString('th-TH');
@@ -632,5 +670,133 @@ postComment = async () => {
     } catch (error) {
         console.error("Post comment failed:", error);
         alert("เกิดข้อผิดพลาด");
+    }
+}
+
+function updateIconState(type, isActive) {
+    const icon = document.getElementById(`icon-${type}`);
+    if (type === 'like') {
+        icon.className = isActive ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+        icon.style.color = isActive ? 'red' : 'black';
+    } else {
+        icon.className = isActive ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark';
+        icon.style.color = isActive ? 'orange' : 'black';
+    }
+}
+
+// ------------------------------------------
+// 2. ฟังก์ชันกดปุ่ม Like
+// ------------------------------------------
+async function toggleLike() {
+    const currentUserId = localStorage.getItem('user_id'); 
+    if (!currentUserId) {
+        alert("กรุณาเข้าสู่ระบบก่อนกดถูกใจ");
+        return;
+    }
+    const urlParams = new URLSearchParams(window.location.search);
+    const noteId = urlParams.get('id');
+    const btn = document.getElementById('btn-like');
+    const countSpan = document.getElementById('like-count');
+
+    try {
+        const res = await fetch(`${API}/api/notes/like`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ noteId, userId: currentUserId })
+        });
+        const data = await res.json();
+
+        // เปลี่ยนสีปุ่มทันที
+        updateIconState('like', data.liked);
+
+        // อัปเดตตัวเลข (บวก/ลบ สดๆ หน้าเว็บ ไม่ต้องโหลดใหม่)
+        let currentCount = parseInt(countSpan.innerText);
+        if (data.liked) {
+            countSpan.innerText = currentCount + 1;
+        } else {
+            countSpan.innerText = Math.max(0, currentCount - 1);
+        }
+
+    } catch (err) {
+        console.error("Like error", err);
+    }
+}
+
+// ------------------------------------------
+// 3. ฟังก์ชันกดปุ่ม Save
+// ------------------------------------------
+async function toggleSave() {
+    const noteId = new URLSearchParams(window.location.search).get('id');
+    const countSpan = document.getElementById('save-count');
+    const currentUserId = localStorage.getItem('user_id'); 
+    
+
+    if (!currentUserId) {
+        alert("กรุณาเข้าสู่ระบบก่อนกดถูกใจ");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API}/api/notes/favorite`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ noteId, userId: currentUserId })
+        });
+        const data = await res.json();
+
+        updateIconState('save', data.saved);
+
+        // อัปเดตตัวเลขยอดเซฟรวม
+        let currentCount = parseInt(countSpan.innerText);
+        countSpan.innerText = data.saved ? currentCount + 1 : Math.max(0, currentCount - 1);
+
+    } catch (err) { console.error(err); }
+}
+
+async function loadSubjectsDatalist() {
+    try {
+
+        const response = await fetch(`${API}/api/notes/subjects`); 
+        const subjects = await response.json();
+
+        const datalist = document.getElementById('subject-list');
+        datalist.innerHTML = ''; 
+
+        subjects.forEach(sub => {
+            const option = document.createElement('option');
+            option.value = sub.subject_name; 
+            datalist.appendChild(option);
+        });
+
+    } catch (err) {
+        console.error("Error loading subjects:", err);
+    }
+}
+
+async function deleteNote() {
+    if (!confirm("คุณแน่ใจไหมว่าจะลบโน้ตนี้? การกระทำนี้ไม่สามารถย้อนกลับได้")) {
+        return;
+    }
+
+    const noteId = new URLSearchParams(window.location.search).get('id');
+    const userId = localStorage.getItem('user_id');
+
+    try {
+        const res = await fetch(`${API}/api/notes/${noteId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userId }) 
+        });
+
+        if (res.ok) {
+            alert("ลบโน้ตเรียบร้อยแล้ว");
+            window.location.href = 'main.html';
+        } else {
+            const data = await res.json();
+            alert("ลบไม่สำเร็จ: " + data.message);
+        }
+    } catch (err) {
+        console.error(err);
+        alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
     }
 }

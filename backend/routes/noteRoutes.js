@@ -8,8 +8,44 @@ const pool = require('../config/database');
 
 const router = express.Router();
 
+router.get('/subjects', async (req, res) => {
+    try {
+        const sql = `
+            SELECT subject_id, subject_code, subject_name 
+            FROM subjects 
+            ORDER BY subject_code ASC
+        `;
+        const [rows] = await pool.query(sql);
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Error fetching subjects" });
+    }
+});
+
 router.get('/', async (req, res) => {
     try {
+        const currentUserId = req.query.userId || 0;
+        const searchRaw = req.query.search || '';
+        const hasSearch = searchRaw.trim() !== '';
+        const searchTerm = hasSearch ? `%${searchRaw.trim()}%` : null;
+
+        const params = [currentUserId];
+        const whereClauses = [];
+
+        if (hasSearch) {
+            whereClauses.push(`
+                (n.title LIKE ? OR s.subject_name LIKE ? OR EXISTS (
+                    SELECT 1 FROM note_tags nt
+                    JOIN tags t ON nt.tag_id = t.tag_id
+                    WHERE nt.note_id = n.note_id AND t.tag_name LIKE ?
+                ))
+            `);
+            params.push(searchTerm, searchTerm, searchTerm);
+        }
+
+        const whereSql = whereClauses.length ? `WHERE ${whereClauses.join(' AND ')}` : '';
+
         const [rows] = await pool.query(`
             SELECT
                 n.note_id AS id,
@@ -20,6 +56,8 @@ router.get('/', async (req, res) => {
                 s.subject_code AS note_code,
                 s.subject_name,
                 u.username AS uploader,
+                (SELECT COUNT(*) FROM likes WHERE note_id = n.note_id AND user_id = ?) AS is_liked,
+                (SELECT COUNT(*) FROM likes WHERE note_id = n.note_id) AS total_likes,
                 COUNT(DISTINCT c.comment_id) AS comment_count,
                 (
                     SELECT JSON_ARRAYAGG(t.tag_name)
@@ -31,9 +69,10 @@ router.get('/', async (req, res) => {
             JOIN subjects AS s ON n.subject_id = s.subject_id
             JOIN users AS u ON n.uploader_id = u.user_id
             LEFT JOIN comments AS c ON n.note_id = c.note_id
+            ${whereSql}
             GROUP BY n.note_id, n.title, n.file_url, n.views, s.subject_code, s.subject_name, u.username
             ORDER BY n.created_at DESC;
-        `);
+        `, params);
 
         // --- แปลง tags จาก JSON string → array ---
         rows.forEach(row => {
@@ -54,67 +93,33 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.get('/:id', async (req, res) => {
+// =======================================================
+// 1. Tab: โน้ตที่อัปโหลด (Uploads)
+// Path: /api/notes/user/:id
+// =======================================================
+router.get('/user/:id', async (req, res) => {
     try {
-        const id = req.params.id
-        const [rows] = await pool.query(`
-            SELECT
-                n.note_id AS id,
-                n.title AS note_title,
-                n.thumbnail_url AS file_img,
-                u.file_img as profile,u.nickname,
-                n.views,
-                s.subject_code AS note_code,
-                s.subject_name,
-                u.username AS uploader,
-                COUNT(DISTINCT c.comment_id) AS comment_count,
-                (
-                    SELECT JSON_ARRAYAGG(t.tag_name)
-                    FROM note_tags nt
-                    JOIN tags t ON nt.tag_id = t.tag_id
-                    WHERE nt.note_id = n.note_id
-                ) AS tags
-            FROM notes AS n
-            JOIN subjects AS s ON n.subject_id = s.subject_id
-            JOIN users AS u ON n.uploader_id = u.user_id
-            LEFT JOIN comments AS c ON n.note_id = c.note_id
-            WHERE u.user_id = ?
-            GROUP BY n.note_id, n.title, n.file_url, n.views, s.subject_code, s.subject_name, u.username
-            ORDER BY n.created_at DESC;
-        `,[id]);
+        const targetUserId = req.params.id; // ID ของเจ้าของโปรไฟล์
+        const viewerUserId = req.query.userId || 0; // ID ของคนดู (เพื่อเช็คว่าเรากดไลก์หรือยัง)
 
-        // --- แปลง tags จาก JSON string → array ---
-        rows.forEach(row => {
-            if (typeof row.tags === "string") {
-                try {
-                    row.tags = JSON.parse(row.tags);
-                } catch {
-                    row.tags = [];
-                }
-            }
-        });
-
-        res.json(rows);
-
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Something went wrong" });
-    }
-});
-
-router.get('/:id/favorites', async (req, res) => {
-    const id = req.params.id
-    try {
-        const [rows] = await pool.query(`
+        const sql = `
             SELECT 
-               n.note_id AS id,
+                n.note_id AS id,
                 n.title AS note_title,
                 n.thumbnail_url AS file_img,
-                u.file_img as profile,u.nickname,
+                u.file_img as profile,
+                u.nickname,
                 n.views,
                 s.subject_code AS note_code,
                 s.subject_name,
                 u.username AS uploader,
+                
+                -- 🔥 เช็คว่า "คนดู" เคยไลก์โน้ตนี้ไหม
+                (SELECT COUNT(*) FROM likes WHERE note_id = n.note_id AND user_id = ?) AS is_liked,
+                
+                -- นับยอดไลก์รวมทั้งหมด
+                (SELECT COUNT(*) FROM likes WHERE note_id = n.note_id) AS total_likes,
+
                 COUNT(DISTINCT c.comment_id) AS comment_count,
                 (
                     SELECT JSON_ARRAYAGG(t.tag_name)
@@ -122,26 +127,25 @@ router.get('/:id/favorites', async (req, res) => {
                     JOIN tags t ON nt.tag_id = t.tag_id
                     WHERE nt.note_id = n.note_id
                 ) AS tags
-            FROM notes n
-            JOIN favorites f ON n.note_id = f.note_id -- JOIN ตาราง favorites
+            FROM notes AS n
             JOIN users u ON n.uploader_id = u.user_id
             JOIN subjects s ON n.subject_id = s.subject_id
             LEFT JOIN comments c ON n.note_id = c.note_id
-            LEFT JOIN note_tags nt ON n.note_id = nt.note_id
-            LEFT JOIN tags t ON nt.tag_id = t.tag_id
-            WHERE f.user_id = ?
+            
+            -- 🔥 กรองเฉพาะโน้ตที่ user คนนี้เป็นคนอัปโหลด
+            WHERE n.uploader_id = ?
+            
             GROUP BY n.note_id
-            ORDER BY f.created_at DESC
-        `,[id]);
+            ORDER BY n.created_at DESC
+        `;
 
-        // --- แปลง tags จาก JSON string → array ---
+        // ใส่ viewerUserId ตัวแรก (สำหรับ is_liked) และ targetUserId ตัวที่สอง (สำหรับ WHERE)
+        const [rows] = await pool.query(sql, [viewerUserId, targetUserId]);
+
+        // แปลง Tags จาก JSON
         rows.forEach(row => {
             if (typeof row.tags === "string") {
-                try {
-                    row.tags = JSON.parse(row.tags);
-                } catch {
-                    row.tags = [];
-                }
+                try { row.tags = JSON.parse(row.tags); } catch { row.tags = []; }
             }
         });
 
@@ -149,24 +153,33 @@ router.get('/:id/favorites', async (req, res) => {
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Something went wrong" });
+        res.status(500).json({ message: "Error fetching user uploads" });
     }
 });
 
-
-router.get('/:id/likes', async (req, res) => {
-    const id = req.params.id
+// =======================================================
+// 2. Tab: โน้ตที่ถูกใจ (Likes)
+// Path: /api/notes/user/:id/likes
+// =======================================================
+router.get('/user/:id/likes', async (req, res) => {
     try {
-        const [rows] = await pool.query(`
+        const targetUserId = req.params.id;
+        const viewerUserId = req.query.userId || 0;
+
+        const sql = `
             SELECT 
                 n.note_id AS id,
                 n.title AS note_title,
                 n.thumbnail_url AS file_img,
-                u.file_img as profile,u.nickname,
+                u.file_img as profile, u.nickname,
                 n.views,
                 s.subject_code AS note_code,
                 s.subject_name,
                 u.username AS uploader,
+                
+                (SELECT COUNT(*) FROM likes WHERE note_id = n.note_id AND user_id = ?) AS is_liked,
+                (SELECT COUNT(*) FROM likes WHERE note_id = n.note_id) AS total_likes,
+
                 COUNT(DISTINCT c.comment_id) AS comment_count,
                 (
                     SELECT JSON_ARRAYAGG(t.tag_name)
@@ -175,25 +188,24 @@ router.get('/:id/likes', async (req, res) => {
                     WHERE nt.note_id = n.note_id
                 ) AS tags
             FROM notes n
-            JOIN likes l ON n.note_id = l.note_id
+            -- 🔥 JOIN กับตาราง likes เพื่อเอาเฉพาะโน้ตที่ targetUser เคยไลก์
+            JOIN likes l ON n.note_id = l.note_id 
             JOIN users u ON n.uploader_id = u.user_id
             JOIN subjects s ON n.subject_id = s.subject_id
-            LEFT JOIN note_tags nt ON n.note_id = nt.note_id
             LEFT JOIN comments c ON n.note_id = c.note_id
-            LEFT JOIN tags t ON nt.tag_id = t.tag_id
+            
+            -- 🔥 กรองจากตาราง likes
             WHERE l.user_id = ?
+            
             GROUP BY n.note_id
             ORDER BY l.created_at DESC
-        `,[id]);
+        `;
 
-        // --- แปลง tags จาก JSON string → array ---
+        const [rows] = await pool.query(sql, [viewerUserId, targetUserId]);
+
         rows.forEach(row => {
             if (typeof row.tags === "string") {
-                try {
-                    row.tags = JSON.parse(row.tags);
-                } catch {
-                    row.tags = [];
-                }
+                try { row.tags = JSON.parse(row.tags); } catch { row.tags = []; }
             }
         });
 
@@ -201,7 +213,67 @@ router.get('/:id/likes', async (req, res) => {
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Something went wrong" });
+        res.status(500).json({ message: "Error fetching liked notes" });
+    }
+});
+
+// =======================================================
+// 3. Tab: รายการโปรด (Favorites)
+// Path: /api/notes/user/:id/favorites
+// =======================================================
+router.get('/user/:id/favorites', async (req, res) => {
+    try {
+        const targetUserId = req.params.id;
+        const viewerUserId = req.query.userId || 0;
+
+        const sql = `
+            SELECT 
+                n.note_id AS id,
+                n.title AS note_title,
+                n.thumbnail_url AS file_img,
+                u.file_img as profile, u.nickname,
+                n.views,
+                s.subject_code AS note_code,
+                s.subject_name,
+                u.username AS uploader,
+                
+                (SELECT COUNT(*) FROM likes WHERE note_id = n.note_id AND user_id = ?) AS is_liked,
+                (SELECT COUNT(*) FROM likes WHERE note_id = n.note_id) AS total_likes,
+
+                COUNT(DISTINCT c.comment_id) AS comment_count,
+                (
+                    SELECT JSON_ARRAYAGG(t.tag_name)
+                    FROM note_tags nt
+                    JOIN tags t ON nt.tag_id = t.tag_id
+                    WHERE nt.note_id = n.note_id
+                ) AS tags
+            FROM notes n
+            -- 🔥 JOIN กับตาราง favorites
+            JOIN favorites f ON n.note_id = f.note_id 
+            JOIN users u ON n.uploader_id = u.user_id
+            JOIN subjects s ON n.subject_id = s.subject_id
+            LEFT JOIN comments c ON n.note_id = c.note_id
+            
+            -- 🔥 กรองจากตาราง favorites
+            WHERE f.user_id = ?
+            
+            GROUP BY n.note_id
+            ORDER BY f.created_at DESC
+        `;
+
+        const [rows] = await pool.query(sql, [viewerUserId, targetUserId]);
+
+        rows.forEach(row => {
+            if (typeof row.tags === "string") {
+                try { row.tags = JSON.parse(row.tags); } catch { row.tags = []; }
+            }
+        });
+
+        res.json(rows);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Error fetching favorite notes" });
     }
 });
 
@@ -244,72 +316,83 @@ router.post('/', Upload.fields([
     { name: 'coverImage', maxCount: 1 }
 ]), async (req, res) => {
 
-    // เช็คไฟล์ก่อน
+    // 1. เช็คไฟล์ (เหมือนเดิม)
     if (!req.files || !req.files['pdfFile'] || !req.files['coverImage']) {
-        return res.status(400).json({ message: "กรุณาส่งไฟล์ PDF และรูปปกให้ครบถ้วน" });
+        return res.status(400).json({ message: "ข้อมูลไม่ครบ" });
     }
 
-
-    // ขอ Connection จาก Pool เพื่อทำ Transaction
-    const connection = await pool.getConnection();
-    
     try {
-        await connection.beginTransaction(); // เริ่ม Transaction
-
         const pdfFile = req.files['pdfFile'][0];
         const coverImage = req.files['coverImage'][0];
-        const { title, description, subject_id, tags, uploader_id } = req.body;
+        const { title, description, subject_name, tags, uploader_id } = req.body;
 
-        // แปลง Path สำหรับลง Database (ตัด ./public ออก)
         const fileUrl = '/' + pdfFile.path.replace(/\\/g, '/').replace('public/', '');
         const thumbUrl = '/' + coverImage.path.replace(/\\/g, '/').replace('public/', '');
 
-        // 1. Insert Note
-        const sqlNote = `
-            INSERT INTO notes (title, description, file_url, thumbnail_url, uploader_id, subject_id) 
-            VALUES (?, ?, ?, ?, ?, ?)
-        `;
-        const [noteResult] = await connection.execute(sqlNote, [
-            title, 
-            description || '', 
-            fileUrl, 
-            thumbUrl, 
-            uploader_id, 
-            subject_id
-        ]);
+        // -------------------------------------------------------------
+        // ส่วนที่ทำให้ง่ายขึ้น: ใช้ pool.query ตรงๆ ไม่ต้องขอ connection
+        // -------------------------------------------------------------
+        
+        let finalSubjectId;
+
+        // A. เช็คก่อนว่ามีวิชานี้ไหม?
+        const [existingSub] = await pool.query(
+            'SELECT subject_id FROM subjects WHERE subject_name = ?', 
+            [subject_name]
+        );
+
+        if (existingSub.length > 0) {
+            // ✅ มีแล้ว -> ใช้ ID เดิม
+            finalSubjectId = existingSub[0].subject_id;
+        } else {
+            // 🆕 ยังไม่มี -> สร้างใหม่เลย
+            const tempCode = "NEW-" + Math.floor(Math.random() * 1000);
+            
+            const [newSub] = await pool.query(
+                'INSERT INTO subjects (subject_code, subject_name, faculty) VALUES (?, ?, ?)',
+                [tempCode, subject_name, 'General']
+            );
+            
+            finalSubjectId = newSub.insertId; // ได้ ID ใหม่
+        }
+
+        // B. บันทึก Note (ใช้ finalSubjectId)
+        const [noteResult] = await pool.query(
+            `INSERT INTO notes (title, description, file_url, thumbnail_url, uploader_id, subject_id) 
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [title, description || '', fileUrl, thumbUrl, uploader_id, finalSubjectId]
+        );
 
         const newNoteId = noteResult.insertId;
 
+        // C. บันทึก Tags (ถ้ามี)
         if (tags && tags.trim() !== '') {
-            const tagList = tags.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
-
+            const tagList = tags.split(',').map(t => t.trim()).filter(t => t !== '');
+            
             for (const tagName of tagList) {
-                await connection.execute(`INSERT IGNORE INTO tags (tag_name) VALUES (?)`, [tagName]);
-
-                const [tagResult] = await connection.execute(`SELECT tag_id FROM tags WHERE tag_name = ?`, [tagName]);
+                // เพิ่ม Tag (IGNORE คือถ้ามีแล้วก็ข้ามไป ไม่ error)
+                await pool.query(`INSERT IGNORE INTO tags (tag_name) VALUES (?)`, [tagName]);
                 
-                if (tagResult.length > 0) {
-                    const tagId = tagResult[0].tag_id;
-                    await connection.execute(
+                // หา ID ของ Tag
+                const [tagRes] = await pool.query(`SELECT tag_id FROM tags WHERE tag_name = ?`, [tagName]);
+                
+                if (tagRes.length > 0) {
+                    // จับคู่ Note กับ Tag
+                    await pool.query(
                         `INSERT INTO note_tags (note_id, tag_id) VALUES (?, ?)`, 
-                        [newNoteId, tagId]
+                        [newNoteId, tagRes[0].tag_id]
                     );
                 }
             }
         }
 
-        await connection.commit();
-        res.status(201).json({ message: "อัปโหลดและบันทึกข้อมูลเรียบร้อย" });
+        res.status(201).json({ message: "อัปโหลดเรียบร้อย" });
 
     } catch (err) {
-        await connection.rollback();
         console.error("Upload Error:", err);
-        res.status(500).json({ message: "เกิดข้อผิดพลาดในการบันทึกข้อมูล" });
-    } finally {
-        connection.release();
+        res.status(500).json({ message: "เกิดข้อผิดพลาด" });
     }
 });
-
 
 
 // 
@@ -321,54 +404,69 @@ router.post('/', Upload.fields([
 router.get('/detail/:id', async (req, res) => {
     try {
         const noteId = req.params.id;
+        const currentUserId = req.query.userId || 0; // รับ userId คนที่ดูอยู่ (ถ้าไม่มีให้เป็น 0)
 
-        // 1. อัปเดตยอดวิวเพิ่มขึ้น 1 ครั้ง
+        // อัปเดตยอดวิว (เหมือนเดิม)
         await pool.query('UPDATE notes SET views = views + 1 WHERE note_id = ?', [noteId]);
 
-        // 2. ดึงข้อมูลโน้ต + ข้อมูลคนอัปโหลด + วิชา
-        const [rows] = await pool.query(`
+        // Query ข้อมูล (เพิ่มส่วนเช็ค is_liked และ is_saved)
+        const sql = `
             SELECT 
-                n.note_id, n.title, n.description, n.file_url, n.created_at, n.views,
+                n.*, 
                 u.nickname, u.file_img AS uploader_img,
-                s.subject_code, s.subject_name
+                s.subject_code, s.subject_name,
+                -- เช็คว่าคนนี้เคยไลก์ไหม (ถ้าเคยจะได้ 1, ไม่เคยได้ 0)
+                (SELECT COUNT(*) FROM likes WHERE note_id = n.note_id AND user_id = ?) AS is_liked,
+                -- เช็คว่าคนนี้เคยเซฟไหม
+                (SELECT COUNT(*) FROM favorites WHERE note_id = n.note_id AND user_id = ?) AS is_saved,
+                -- นับยอดไลก์รวมทั้งหมด
+                (SELECT COUNT(*) FROM likes WHERE note_id = n.note_id) AS total_likes,
+                (SELECT COUNT(*) FROM favorites WHERE note_id = n.note_id) AS total_saves
             FROM notes n
             JOIN users u ON n.uploader_id = u.user_id
             JOIN subjects s ON n.subject_id = s.subject_id
             WHERE n.note_id = ?
-        `, [noteId]);
-        if (rows.length === 0) {
-            return res.status(404).json({ message: "ไม่พบโน้ตนี้" });
-        }
+        `;
+
+        const [rows] = await pool.query(sql, [currentUserId, currentUserId, noteId]);
+
+        if (rows.length === 0) return res.status(404).json({ message: "Note not found" });
+
+        // ... (Logic จัดการ Path รูปภาพ เหมือนเดิม) ...
+        // ...
 
         res.json(rows[0]);
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
+        res.status(500).json({ message: "Error" });
     }
 });
-
 // ---------------------------------------------------
 // 1. GET: ดึงคอมเมนต์ทั้งหมดของ Note ID นั้นๆ
 // ---------------------------------------------------
 router.get('/comments/:noteId', async (req, res) => {
     try {
-        const { noteId } = req.params;
+        const noteId = req.params.noteId;
 
         const sql = `
             SELECT 
-                c.comment_id, c.content, c.created_at,
-                u.user_id, u.nickname, u.file_img
+                c.comment_id, 
+                c.content, 
+                c.created_at,
+                u.user_id,
+                u.username, 
+                u.nickname, 
+                u.file_img
             FROM comments c
             JOIN users u ON c.user_id = u.user_id
             WHERE c.note_id = ?
             ORDER BY c.created_at DESC
         `;
-        
+
         const [rows] = await pool.query(sql, [noteId]);
         
-
-        res.json(rows);
+        res.json(rows); 
 
     } catch (err) {
         console.error(err);
@@ -396,5 +494,95 @@ router.post('/comments', async (req, res) => {
         res.status(500).json({ message: "Error adding comment" });
     }
 });
+
+
+router.post('/like', async (req, res) => {
+    try {
+        const { noteId, userId } = req.body; // รับค่าจากหน้าบ้าน
+
+        // 1. เช็คก่อนว่าเคยไลก์หรือยัง
+        const checkSql = `SELECT * FROM likes WHERE note_id = ? AND user_id = ?`;
+        const [existing] = await pool.query(checkSql, [noteId, userId]);
+
+        if (existing.length > 0) {
+            // A. ถ้าเคยไลก์แล้ว -> ให้ "ลบออก" (Unlike)
+            await pool.query(`DELETE FROM likes WHERE note_id = ? AND user_id = ?`, [noteId, userId]);
+            res.json({ liked: false, message: "Unliked" });
+        } else {
+            // B. ถ้ายังไม่เคย -> ให้ "เพิ่มเข้าไป" (Like)
+            await pool.query(`INSERT INTO likes (note_id, user_id) VALUES (?, ?)`, [noteId, userId]);
+            res.json({ liked: true, message: "Liked" });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Error toggling like" });
+    }
+});
+
+// ---------------------------------------------------
+// 2. Toggle Favorite (กดเซฟ / ยกเลิกเซฟ)
+// ---------------------------------------------------
+router.post('/favorite', async (req, res) => {
+    try {
+        const { noteId, userId } = req.body;
+
+        const checkSql = `SELECT * FROM favorites WHERE note_id = ? AND user_id = ?`;
+        const [existing] = await pool.query(checkSql, [noteId, userId]);
+
+        if (existing.length > 0) {
+            // A. ถ้าเคยเซฟแล้ว -> ให้ "ลบออก" (Unsave)
+            await pool.query(`DELETE FROM favorites WHERE note_id = ? AND user_id = ?`, [noteId, userId]);
+            res.json({ saved: false, message: "Removed from favorites" });
+        } else {
+            // B. ถ้ายังไม่เคย -> ให้ "เพิ่มเข้าไป" (Save)
+            await pool.query(`INSERT INTO favorites (note_id, user_id) VALUES (?, ?)`, [noteId, userId]);
+            res.json({ saved: true, message: "Added to favorites" });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Error toggling favorite" });
+    }
+});
+
+router.delete('/:id', async (req, res) => {
+    try {
+        const noteId = req.params.id;
+        const { userId } = req.body; // รับ userId มาเพื่อเช็คว่าเป็นเจ้าของไหม
+
+        // 1. ดึงข้อมูลโน้ตมาก่อน เพื่อดูว่าใครเป็นเจ้าของ และไฟล์ชื่ออะไร
+        const [rows] = await pool.query('SELECT uploader_id, file_url, thumbnail_url FROM notes WHERE note_id = ?', [noteId]);
+
+        if (rows.length === 0) return res.status(404).json({ message: "ไม่พบโน้ต" });
+        const note = rows[0];
+
+        // 2. เช็คว่าเป็นเจ้าของไหม (กันคนอื่นมาเนียนลบ)
+        if (note.uploader_id != userId) {
+            return res.status(403).json({ message: "ไม่มีสิทธิ์ลบโน้ตนี้" });
+        }
+
+        // 3. ลบไฟล์ออกจากเครื่อง Server (ถ้ามี)
+        try {
+            // แปลง URL กลับเป็น Path ไฟล์จริง (ตัด / ออก)
+            const pdfPath = `./public${note.file_url}`; 
+            const imgPath = `./public${note.thumbnail_url}`;
+            
+            if (fs.existsSync(pdfPath)) fs.unlinkSync(pdfPath);
+            if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
+        } catch (fileErr) {
+            console.error("Error deleting file:", fileErr);
+            // ให้ทำงานต่อได้ แม้ลบไฟล์ไม่สำเร็จ (ลบใน DB ก็ยังดี)
+        }
+
+        // 4. ลบข้อมูลจาก Database
+        await pool.query('DELETE FROM notes WHERE note_id = ?', [noteId]);
+
+        res.json({ message: "ลบโน้ตสำเร็จ" });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "เกิดข้อผิดพลาด" });
+    }
+});
+
 
 module.exports = router;

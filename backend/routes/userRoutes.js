@@ -159,13 +159,41 @@ router.get('/profile/:id', async (req, res) => {
     try {
         const id = req.params.id;
 
-        const [rows, fields] = await pool.query("SELECT * FROM users WHERE user_id = ?",id);
+        // 1. ดึงข้อมูลผู้ใช้ (User Info)
+        const [users] = await pool.query("SELECT * FROM users WHERE user_id = ?", [id]);
 
-        res.json(rows);
-    }catch(err) {
-        res.status(500).json({message: "Something went wrong"});
+        if (users.length === 0) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const data = users[0];
+
+        if(data.nickname === null){ 
+            data.nickname = data.username;
+        }
+
+        const user = users[0];
+        const sqlStats = `
+            SELECT 
+                -- นับจำนวนโน้ตที่ user นี้อัปโหลด
+                (SELECT COUNT(*) FROM notes WHERE uploader_id = ?) AS total_notes,
+                
+                -- นับจำนวนไลก์รวมทั้งหมด ที่โน้ตของ user นี้ได้รับ
+                (SELECT COUNT(*) 
+                 FROM likes l 
+                 JOIN notes n ON l.note_id = n.note_id 
+                 WHERE n.uploader_id = ?) AS total_likes
+        `;
+
+        const [stats] = await pool.query(sqlStats, [id, id]);
+        user.stats = stats[0]; 
+
+        // ส่งกลับทีเดียว
+        res.json(user);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Something went wrong" });
     }
-    
 });
 
 module.exports = router;

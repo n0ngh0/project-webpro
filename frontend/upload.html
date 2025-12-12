@@ -72,13 +72,17 @@
           </div>
 
           <div class="upload-form-group">
-            <label>วิชา *</label>
-            <select name="subject_id" required>
-              <option value="">เลือกวิชา</option>
-              <option value="1">Intro to Programming</option>
-              <option value="2">Calculus 1</option>
-              <option value="3">General Physics</option>
-            </select>
+              <label>วิชา *</label>
+              
+              <input type="text" 
+                    name="subject_name" 
+                    list="subject-list" 
+                    placeholder="พิมพ์ชื่อวิชา หรือเลือกจากรายการ..." 
+                    autocomplete="off" 
+                    required>
+
+              <datalist id="subject-list">
+                  </datalist>
           </div>
 
           <div class="upload-form-group">
