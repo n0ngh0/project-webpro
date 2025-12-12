@@ -88,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(document.getElementById('subject-list')) {
         loadSubjectsDatalist();
     }
+    
 });
 
 
