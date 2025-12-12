@@ -10,14 +10,21 @@
 
     <header id="header">    
         <nav>
-            <div class="logo"><h1 onclick="window.location.href= `main.html`"><span style="color: #F8AD24;">Note</span>Up</h1><i class="fa-solid fa-bars" id="burger" onclick="burger()"></i></div>
+                
+            <div class="logo"><h1 onclick="window.location.href= `main.html`">
+                <span style="color: #F8AD24;">Note</span>Up</h1>
+                <span class="item-span" style="display: flex; flex-direction: columns; gap: 12px;">
+                    <img id="new-profile" onclick="window.location.href=`profile.html`">
+                    <i class="fa-solid fa-bars" id="burger" onclick="burger()"></i>
+                </span>
+            </div>
             <div class="search" id="search-bar">
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" id="search" placeholder="ค้นหาโน้ต วิชา หรือแท๊ก...">
             </div>
             <div class="right" id="right">
                 <button id="login_btn" onclick="openPopup('login-form')">เข้าสู่ระบบ</button>
-                <img id="profile" onclick="window.location.href=`profile.html`">
+                    
             </div>
         </nav>
     </header>

@@ -36,10 +36,13 @@ nav .logo {
     align-items: center;
     justify-content: space-between;
 }
-nav .logo i {
+nav .logo i{
     border: 1px solid #ccc;
     padding: 8px;
     border-radius: 8px;
+    display: none;
+}
+nav .logo img{
     display: none;
 }
 nav .logo h1:hover {
@@ -70,6 +73,10 @@ nav .search input {
     padding: 0px 50px;
     font-weight: 500;
     font-size: 16px;
+}
+nav #new-profile {
+    display: none;
+    opacity: 0;
 }
 .right {
     width: 100px;
@@ -1436,6 +1443,10 @@ h3 {
     nav .logo i{
         display: block;
     }
+    nav #new-profile {
+        display: block;
+        opacity: 100%;
+    }
     #login-form .form-data{
         width: 64%;
         margin-top: 160px;
@@ -1450,7 +1461,6 @@ h3 {
     }
     nav .right {
         display: none;
-
     }
 
     .form-button{

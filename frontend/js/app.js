@@ -65,13 +65,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const searchInput = document.getElementById('search');
     if (searchInput) {
-        searchInput.addEventListener('change', (e) => {
+        // live search on pages that show course list
+        searchInput.addEventListener('input', (e) => {
             const term = e.target.value.trim();
-            fetchCourses(term);
+            if (document.getElementById('course-list')) {
+                fetchCourses(term);
+            }
+        });
+
+        // Enter key: navigate to main with query param so results shown there
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const term = searchInput.value.trim();
+                if (term) {
+                    window.location.href = `main.html?search=${encodeURIComponent(term)}`;
+                } else {
+                    window.location.href = 'main.html';
+                }
+            }
         });
     }
-    if(document.getElementById('course-list')) {
-        fetchCourses();
+
+    if (document.getElementById('course-list')) {
+        // if main.html has a search param, use it
+        const urlParams = new URLSearchParams(window.location.search);
+        const q = urlParams.get('search');
+        if (q) {
+            if (searchInput) searchInput.value = q;
+            fetchCourses(q);
+        } else {
+            fetchCourses();
+        }
     }
     if(document.getElementById('course-profile-list')) {
         fetchProfileCourses();
@@ -188,6 +213,8 @@ const handleSignUp = async (e) => {
 const UpdateNavbar =  async () => {
     const loginBtn = document.getElementById('login_btn');
     const profileIcon = document.getElementById('profile');
+    const profileIcon2 = document.getElementById('new-profile');
+
 
     if(localStorage.getItem('authToken') != null) {
         try {
@@ -204,6 +231,11 @@ const UpdateNavbar =  async () => {
                     const pSrc = user.file_img ? ('../' + user.file_img) : '../img/images.png';
                     profileIcon.src = pSrc;
                 }
+                if(profileIcon2) {
+                    profileIcon2.style.display = "block";
+                    const pSrc = user.file_img ? ('../' + user.file_img) : '../img/images.png';
+                    profileIcon2.src = pSrc;
+                }
             }
         } catch (err) {
             console.error("Something went wrong", err);
@@ -211,6 +243,7 @@ const UpdateNavbar =  async () => {
     } else {
         if(loginBtn) loginBtn.style.display = "block";
         if(profileIcon) profileIcon.style.display = "none";
+        if(profileIcon2) profileIcon2.style.opacity = "0";
     }
 }
 
@@ -308,7 +341,7 @@ const renderCourse = (coursesData, isProfile = false) => {
             <div class="course-info">
                 <div class="course-profile">
                     <img src="${profileSrc}" alt="" class="profile">
-                    <span>${course.nickname}</span>
+                    <span>${course.nickname == null ? course.uploader : course.nickname}</span>
                 </div>
 
                 <div class="course-stats">
@@ -799,9 +832,29 @@ async function deleteNote() {
 const burger = () => {
     const header = document.getElementById('header');
     const searchBar = document.getElementById('search-bar');
-    const right = document.getElementById('right');
+    const right = document.getElementById('new-profile');
+    const login_btn = document.getElementById('right');
+
+    const islogin = localStorage.getItem('user_id');
+    if(islogin){
+        login_btn.style.opacity = 0;
+    }
+
 
     header.classList.toggle('active');
     searchBar.style.display = searchBar.style.display === 'flex' ? 'none' : 'flex';
-    right.style.display = right.style.display === 'flex' ? 'none' : 'flex';
+    login_btn.style.display = login_btn.style.display === 'block' ? 'none' : 'block';
+
 }   
+
+let resizeTimer;
+
+    window.addEventListener('resize', function() {
+        // 1. ยกเลิกคำสั่งเดิมถ้ายัมีการขยับหน้าจออยู่
+        clearTimeout(resizeTimer);
+
+        // 2. สั่งให้รอ 500ms (0.5 วินาที) หลังจากหยุดขยับ แล้วค่อย Refresh
+        resizeTimer = setTimeout(function() {
+            window.location.reload();
+        }, 500); 
+    });
