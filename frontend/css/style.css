@@ -30,6 +30,18 @@ nav {
     justify-content: space-between;
     align-items: center;
 }
+nav .logo {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+nav .logo i {
+    border: 1px solid #ccc;
+    padding: 8px;
+    border-radius: 8px;
+    display: none;
+}
 nav .logo h1:hover {
     cursor: pointer;
 }
@@ -1408,3 +1420,129 @@ h3 {
     border-radius: 5px; 
     cursor: pointer; 
 }
+@media (max-width: 480px) {
+    header.active {
+        height: 210px;
+    }
+    nav {
+        flex-direction: column;
+        gap: 20px;
+    }
+    nav .logo {
+        width: 100%;
+    }
+    nav .logo i{
+        display: block;
+    }
+    #login-form .form-data{
+        width: 64%;
+        margin-top: 160px;
+    }
+
+    #register-form .form-data{
+        width: 64%;
+        margin-top: 52px;
+    }
+    nav .search {
+        display: none;
+    }
+    nav .right {
+        display: none;
+
+    }
+
+    .form-button{
+        width: 109%;
+    }
+    
+    .document-page iframe#pdf-viewer{
+        width: 406.4px;
+        height: 100%;
+    }
+
+    .document-page{
+        height: 656px;
+    }
+
+    #comments-container{
+        margin: 20px 0px 0px 0px;
+    }
+
+    .upload-button{
+        right: 12px;
+        bottom: 16px;
+    }
+
+    .comment-input-area{
+        margin: 0;
+    }
+
+    .note-container{
+        padding: 12px;
+    }
+
+    
+    .profile-header{
+        flex-direction: column;
+    }
+
+    #profile-username{
+        font-size: 20px;
+        margin: 0;
+    }
+
+    .profile-container .nametag {
+        font-size: 14px;
+        margin: 0;
+    }
+    .profile-container .profile-text .bio{
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+    .profile-container .profile-text .join-date {
+        font-size: 12px;
+    }
+    .profile-container .profile-info {
+    margin-bottom: 16px;
+    }
+}
+
+@media (max-width: 800px) {
+    #profile-img{
+        width: 112px;
+        height: 112px;
+    }
+
+    .container {
+        max-width: 60vw;
+        margin: 50px auto;
+        max-height: 100vh;
+    }
+
+    .upload-container {
+    max-width: 600px;
+    }
+
+    .upload-button{
+        right: 16px;
+    }
+
+    .document-page iframe#pdf-viewer{
+        width: 728px;
+        height: 100%;
+    }
+
+    .document-page{
+        height: 1000px;
+    }
+
+    .note-container {
+    padding: 20px   ;
+    }
+
+    .right{
+        display: flex;
+        justify-content: center;
+    }
+}
+

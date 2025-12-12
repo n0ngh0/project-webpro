@@ -801,3 +801,13 @@ async function deleteNote() {
         alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
     }
 }
+
+const burger = () => {
+    const header = document.getElementById('header');
+    const searchBar = document.getElementById('search-bar');
+    const right = document.getElementById('right');
+
+    header.classList.toggle('active');
+    searchBar.style.display = searchBar.style.display === 'flex' ? 'none' : 'flex';
+    right.style.display = right.style.display === 'flex' ? 'none' : 'flex';
+}   
